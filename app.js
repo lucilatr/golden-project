@@ -543,6 +543,23 @@
     renderGrid(tl);
   }
 
+  // Mecánicas de UI → ícono minimalista + etiqueta (chip dorado en la celda de UI)
+  const UI_MECH = {
+    tap:     { icon: "⊚", label: "Tap" },
+    hold:    { icon: "⊡", label: "Hold" },
+    swipe:   { icon: "↗", label: "Swipe" },
+    zblocks: { icon: "⧉", label: "Bloques Z" },
+    sword:   { icon: "⚔", label: "Espada" },
+    summary: { icon: "≡", label: "Resumen" },
+  };
+  function mechChips(s) {
+    const arr = Array.isArray(s.uiMechanics) ? s.uiMechanics : [];
+    return arr.map((k) => {
+      const m = UI_MECH[k]; if (!m) return "";
+      return `<span class="mech-chip" title="Mecánica: ${esc(m.label)}"><span class="mech-ic">${m.icon}</span>${esc(m.label)}</span>`;
+    }).join("");
+  }
+
   // Grilla horizontal (guion tipo línea de tiempo): secciones en columnas, dimensiones en filas
   // Línea de tiempo: una sola grilla (bandas de etapa que abarcan sus bloques + info inline)
   function renderGrid(host) {
@@ -589,7 +606,10 @@
           `<span class="htl-c-v" title="Doble clic para editar">${(v || "").trim() ? esc(v) : "—"}</span>`;
         return c;
       };
-      grid.appendChild(cell(3, "htl-c-ui", "UI", "interaction", s.interaction));
+      const uiCell = cell(3, "htl-c-ui", "UI", "interaction", s.interaction);
+      const chips = mechChips(s);
+      if (chips) uiCell.querySelector(".htl-c-v").insertAdjacentHTML("beforebegin", `<div class="htl-mech">${chips}</div>`);
+      grid.appendChild(uiCell);
       grid.appendChild(cell(4, "htl-c-esc", "Escenario", "location", s.location));
       grid.appendChild(cell(5, "htl-c-acc", "Acción", "narrativeAction", s.narrativeAction));
 
