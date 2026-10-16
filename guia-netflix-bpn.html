@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía — Conectarse a la VPN de Netflix y testear un build</title>
+<style>
+  :root{
+    --bg:#0e1016; --bg-2:#151824; --bg-3:#1b1f2e; --line:#2a3042; --line-2:#363d52;
+    --text:#e7e9f0; --text-2:#a7adc0; --text-dim:#6f768c;
+    --accent:#e50914; --accent-2:#ff5a63; --gold:#d9a441;
+    --radius:14px; --radius-s:9px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;
+    --mono:"SF Mono","JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;word-break:break-all}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px 80px}
+  .step p,.step .step__head{max-width:760px}
+
+  header.top{padding:46px 0 24px;text-align:center}
+  header.top .kicker{display:inline-block;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-2);
+    border:1px solid var(--line-2);border-radius:999px;padding:5px 14px;margin-bottom:16px}
+  header.top h1{margin:0;font-size:28px;line-height:1.2;font-weight:800;letter-spacing:.3px}
+
+  .step{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;margin:0 0 14px;
+    position:relative;overflow:hidden}
+  .step::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--accent),var(--accent-2))}
+  .step__head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .step__num{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+  .step__title{margin:0;font-size:17px;font-weight:700;letter-spacing:.2px}
+  .step p{margin:0 0 10px;color:var(--text-2);font-size:14px}
+  .step p:last-child{margin-bottom:0}
+  .step b{color:var(--text)}
+
+  .shots{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 2px}
+  .shots--col{flex-direction:column;align-items:center}
+  .shots--col figure{max-width:420px;width:100%}
+  figure{margin:0;flex:1 1 180px}
+  /* capturas de pantalla a lo ancho (ocupan todo el ancho de la pagina) */
+  .shots--full{align-items:stretch}
+  .shots--full figure{max-width:none;width:100%}
+  /* capturas de celu apiladas, chicas (50%) */
+  .shots--phone{flex-direction:column;align-items:center}
+  .shots--phone figure{max-width:260px;width:100%}
+  /* icono de app chico */
+  .shots--icon figure{max-width:140px;width:100%}
+  /* paso 6: QR grande a la izquierda + celus apilados a la derecha */
+  .s6{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin:8px 0 2px}
+  .s6 .s6-qr{flex:1 1 440px;max-width:760px;margin:0}
+  .s6 .s6-phones{display:flex;flex-direction:column;gap:12px;flex:0 0 auto}
+  .s6 .s6-phones figure{max-width:220px;margin:0}
+  figure img{width:100%;height:auto;display:block;border:1px solid var(--line-2);border-radius:var(--radius-s);background:#000}
+  figcaption{margin-top:5px;font-size:11.5px;color:var(--text-dim);text-align:center}
+
+  .data{background:var(--bg-3);border:1px solid var(--line-2);border-radius:var(--radius-s);padding:8px 12px;margin:10px 0 4px}
+  .data .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:5px 0;font-size:13.5px}
+  .data .row + .row{border-top:1px solid var(--line)}
+  .data .k{flex:0 0 72px;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+  .data .v{font-family:var(--mono);font-size:13px;color:var(--text);word-break:break-all;flex:1 1 auto}
+  .copy{border:1px solid var(--line-2);background:var(--bg-2);color:var(--text-2);
+    border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;font-family:var(--sans)}
+  .copy:hover{color:var(--text);border-color:var(--text-dim)}
+  .copy.ok{color:#5fcf80;border-color:#2e5e3e}
+
+  .tip{display:flex;gap:9px;background:rgba(217,164,65,.08);border:1px solid rgba(217,164,65,.3);
+    border-radius:var(--radius-s);padding:9px 12px;margin:10px 0 0;font-size:13px;color:#e8cf9a}
+  .tip b{color:var(--gold)}
+
+  footer.end{text-align:center;color:var(--text-dim);font-size:13px;margin-top:30px}
+  footer.end b{color:var(--text-2)}
+
+  .pdf-btn{position:fixed;right:18px;bottom:18px;z-index:50;display:inline-flex;align-items:center;gap:8px;
+    background:var(--accent);color:#fff;border:none;border-radius:999px;padding:12px 20px;font-size:14px;font-weight:700;
+    font-family:var(--sans);cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+  .pdf-btn:hover{background:var(--accent-2)}
+
+  @media print{
+    :root{--bg:#fff;--bg-2:#fff;--bg-3:#f4f4f6;--line:#d8dae2;--line-2:#c2c6d2;
+      --text:#111;--text-2:#333;--text-dim:#666;--accent-2:#b00610}
+    html,body{background:#fff;color:#111}
+    .pdf-btn,.copy{display:none !important}
+    .wrap{max-width:none;padding:0 8px}
+    header.top{padding:8px 0 14px}
+    header.top .kicker{color:#b00610;border-color:#c2c6d2}
+    .step,.data,.tip,figure{break-inside:avoid;page-break-inside:avoid}
+    .shots--full{width:100%;margin:6px 0}
+    a{color:#b00610}
+  }
+</style>
+</head>
+<body>
+<button class="pdf-btn" onclick="window.print()">⬇ Descargar PDF</button>
+
+<div class="wrap">
+
+  <header class="top">
+    <h1>Cómo conectarse a la VPN<br>y testear un build</h1>
+  </header>
+
+  <!-- PASO 1 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">1</div><h2 class="step__title">Descargá Ivanti</h2></div>
+    <p>Descargá e instalá <b>Ivanti Secure Access Client</b> desde:</p>
+    <div class="data">
+      <div class="row"><span class="v"><a href="https://knowledge.netflix.net/technology/vpn" target="_blank">knowledge.netflix.net/technology/vpn</a></span>
+        <button class="copy" data-copy="https://knowledge.netflix.net/technology/vpn">Copiar</button></div>
+    </div>
+    <div class="tip"><span>📱</span><span>Seguramente te pida validar con <b>Duo</b>. Probablemente ya la tengas instalada de cuando validaste el mail de Netflix.</span></div>
+  </section>
+
+  <!-- PASO 2 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">2</div><h2 class="step__title">Conectate a la VPN</h2></div>
+    <p>En <b>Ivanti Secure Access Client</b> tocá <b>+</b> y completá con los siguientes datos:</p>
+    <div class="data">
+      <div class="row"><span class="k">Name</span><span class="v">Netflix Contractor Global</span>
+        <button class="copy" data-copy="Netflix Contractor Global">Copiar</button></div>
+      <div class="row"><span class="k">Server</span><span class="v">pcs.flxvpn.net/contractors</span>
+        <button class="copy" data-copy="pcs.flxvpn.net/contractors">Copiar</button></div>
+    </div>
+    <div class="shots shots--col">
+      <figure><img src="guia-assets/01-vpn-form.png" alt="Ivanti, botón +"></figure>
+      <figure><img src="guia-assets/02-vpn-connected.png" alt="VPN conectada"><figcaption>Así debería aparecer cuando estés conectado a la VPN.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- PASO 3 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">3</div><h2 class="step__title">Entrá al build</h2></div>
+    <p>Con la VPN conectada, abrí el link a continuación y logueate con tu cuenta de Netflix <b>@netflixcontractors.com</b>:</p>
+    <div class="data">
+      <div class="row"><span class="v"><a href="https://games-workspace.netflixpartners.com/games/83206448/play?channelName=Dev_3dar" target="_blank">games-workspace.netflixpartners.com/games/83206448/play?channelName=Dev_3dar</a></span>
+        <button class="copy" data-copy="https://games-workspace.netflixpartners.com/games/83206448/play?channelName=Dev_3dar">Copiar</button></div>
+    </div>
+    <div class="shots shots--full">
+      <figure><img src="guia-assets/punto2-play.png" alt="Interfaz del build (pestaña Play)"></figure>
+    </div>
+  </section>
+
+  <!-- PASO 4 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">4</div><h2 class="step__title">Channel &amp; Build + cuenta de tester</h2></div>
+    <p>Asegurate de estar en <b>Channel &amp; Build</b> en <b>Dev_3dar (harmony_91997…)</b>, tal como se ve en la imagen.</p>
+    <p>En <b>Test Account</b>, abrí el desplegable y tocá <b>Add existing test account</b>. Agregá la cuenta con estos datos:</p>
+    <div class="data">
+      <div class="row"><span class="k">Email</span><span class="v">tester_gheller@netflix.com</span>
+        <button class="copy" data-copy="tester_gheller@netflix.com">Copiar</button></div>
+      <div class="row"><span class="k">PIN</span><span class="v">3368</span>
+        <button class="copy" data-copy="3368">Copiar</button></div>
+    </div>
+    <div class="shots shots--full">
+      <figure><img src="guia-assets/punto3-testaccount.png" alt="Channel & Build y desplegable Test Account"></figure>
+    </div>
+  </section>
+
+  <!-- PASO 5 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">5</div><h2 class="step__title">Instalá el control</h2></div>
+    <p>En el celu, instalá <b>Netflix Game Controller</b> (App Store / Play Store).</p>
+    <div class="shots shots--col shots--icon">
+      <figure><img src="guia-assets/punto4-controller.png" alt="Netflix Game Controller (N-Controller)"><figcaption>Es esta app</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- PASO 6 -->
+  <section class="step">
+    <div class="step__head"><div class="step__num">6</div><h2 class="step__title">Play, escaneá el QR y entrá</h2></div>
+    <p>Ya logueado con la cuenta de tester, tocá <b>Play</b>. Se abre una pantalla con un <b>QR</b>.</p>
+    <p>Escaneá ese QR con la app <b>N-Controller</b> que instalaste en el celu.</p>
+    <p>Te aparece este menú: seleccioná <b>NOTE RELAY</b> — ese es el nuestro, sos el host.</p>
+    <div class="s6">
+      <figure class="s6-qr"><img src="guia-assets/06-qr.png" alt="Pantalla con QR"><figcaption>Tocá Play → aparece el QR</figcaption></figure>
+      <div class="s6-phones">
+        <figure><img src="guia-assets/05-scanner.png" alt="Abrir escáner"><figcaption>Abrí el escáner y escaneá el QR</figcaption></figure>
+        <figure><img src="guia-assets/06-note-relay.png" alt="NOTE RELAY"><figcaption>Seleccioná NOTE RELAY</figcaption></figure>
+      </div>
+    </div>
+    <div class="tip"><span>✅</span><span><b>NOTE RELAY</b> = el nuestro · <b>Join</b> = HARMONY de Netflix.</span></div>
+  </section>
+
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function(){
+        var t=btn.textContent; btn.textContent='Copiado ✓'; btn.classList.add('ok');
+        setTimeout(function(){btn.textContent=t; btn.classList.remove('ok');},1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>
