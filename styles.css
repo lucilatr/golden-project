@@ -200,7 +200,13 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
 }
 .wf-zoom button:hover { border-color: var(--accent, #c9a227); }
 .wf-zoom-lbl { font-family: var(--mono); font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: center; }
-.wf-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 7px; }
+.wf-scroll {
+  overflow-x: auto; overflow-y: hidden; padding-bottom: 6px;
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 7px;
+  width: 100vw; max-width: 100vw;
+  margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  box-sizing: border-box; overscroll-behavior-x: contain;
+}
 .wf-canvaswrap { position: relative; height: 70px; cursor: pointer; }
 .wf-canvas { display: block; position: absolute; left: 0; top: 0; }
 .wf-played { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: rgba(201,162,39,.16); pointer-events: none; }
@@ -218,7 +224,14 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
 .htl-sb-name { font-size: 8.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; margin-top: 3px; opacity: .85; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 /* grilla única con scroll horizontal (proporciones exactas por px/segundo) */
-.htl-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
+/* full-bleed: ocupa todo el ancho del viewport aunque .app esté limitado a 1320px */
+.htl-scroll {
+  overflow-x: auto; overflow-y: hidden; padding-bottom: 8px;
+  width: 100vw; max-width: 100vw;
+  margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  padding-left: 24px; padding-right: 24px;
+  box-sizing: border-box; overscroll-behavior-x: contain;
+}
 .htl-grid2 { display: grid; column-gap: 3px; row-gap: 3px; width: max-content; align-items: stretch; }
 .htl-band2 {
   position: relative;
@@ -483,6 +496,10 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
 .help-body li { margin: 4px 0; }
 .help-body b { color: var(--text); }
 .btn-choreo:hover { color: var(--accent); }
+
+/* Export para Arte — botón visible y destacado */
+.btn-arte { border-color: var(--accent); color: var(--accent-2); }
+.btn-arte:hover { background: var(--accent); color: var(--bg-1); border-color: var(--accent); }
 
 /* modal de coreografía */
 .drawer.choreo-modal { width: 94vw; max-width: 900px; top: 4vh; height: auto; max-height: 92vh;

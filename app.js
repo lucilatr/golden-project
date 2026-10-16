@@ -379,6 +379,9 @@
     const choreoBtn = h("button", { class: "btn-help btn-choreo", title: "Ver el video de la coreografía" }, "💃 Coreografía");
     choreoBtn.addEventListener("click", openChoreo);
     meta.appendChild(choreoBtn);
+    const arteBtn = h("button", { class: "btn-help btn-arte", title: "Descargar brief de escenarios para Arte (.md + .json)" }, "🎨 Export para Arte");
+    arteBtn.addEventListener("click", exportArte);
+    meta.appendChild(arteBtn);
     host.appendChild(meta);
 
     const right = h("div", { class: "header__meta" });
@@ -560,6 +563,20 @@
     }).join("");
   }
 
+  // Convierte la rueda vertical en scroll horizontal cuando el cursor está sobre el elemento.
+  // Libera al borde (deja que la página scrollee vertical) y respeta Shift para scroll nativo.
+  function wheelToHScroll(el) {
+    el.addEventListener("wheel", (e) => {
+      if (!e.deltaY || e.shiftKey) return;
+      if (el.scrollWidth <= el.clientWidth) return;
+      const atStart = el.scrollLeft <= 0;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    }, { passive: false });
+  }
+
   // Grilla horizontal (guion tipo línea de tiempo): secciones en columnas, dimensiones en filas
   // Línea de tiempo: una sola grilla (bandas de etapa que abarcan sus bloques + info inline)
   function renderGrid(host) {
@@ -626,6 +643,7 @@
     scroll.appendChild(grid);
     wrap.appendChild(scroll);
     host.appendChild(wrap);
+    wheelToHScroll(scroll);
 
     grid.querySelectorAll(".htl-c-time").forEach((c) => c.addEventListener("click", () => openDrawer(c.getAttribute("data-seg"))));
     grid.querySelectorAll(".htl-c-letra").forEach((c) => c.addEventListener("click", () => openLyricSync()));
@@ -1213,6 +1231,7 @@
     const ph = h("div", { class: "wf-playhead" });
     cw.append(canvas, played, region, ph);
     scroll.appendChild(cw); wrap.appendChild(scroll); host.appendChild(wrap);
+    wheelToHScroll(scroll);
 
     const redraw = () => {
       const W = Math.round(WF.duration * wfScale());
@@ -1722,6 +1741,103 @@
     a.href = url; a.download = `golden-script-${data.meta.version}-${new Date().toISOString().slice(0, 10)}.json`; a.click();
     URL.revokeObjectURL(url); toast("Export listo");
   }
+  /* ---------- Export para Arte (solo info de escenarios) ---------- */
+  function download(name, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
+  }
+  // Referencia de storyboard sin volcar base64 gigante en el archivo.
+  function sbRef(v) {
+    if (!v) return "";
+    if (v.indexOf("data:") === 0) return "(archivo subido en la app)";
+    return v;
+  }
+  // Agrupa las escenas por escenario/locación, en orden de tiempo.
+  function groupByEscenario() {
+    const segs = data.segments.slice().sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+    const groups = [], idx = {};
+    segs.forEach((s) => {
+      const name = (s.location || "").trim();
+      const key = name || "__sin_definir__";
+      if (!(key in idx)) { idx[key] = groups.length; groups.push({ location: name, scenes: [] }); }
+      groups[idx[key]].scenes.push(s);
+    });
+    return groups;
+  }
+  // Campos que le sirven a Arte para diseñar (sin gameplay, letra ni beats).
+  function arteFields(s) {
+    return [
+      ["Acción narrativa", s.narrativeAction],
+      ["Acción del personaje", s.characterAction],
+      ["Cámara", s.camera],
+      ["Interacción con el entorno", s.environmentInteraction],
+      ["FX visuales", s.visualFX],
+      ["Transición", s.transition],
+      ["Beat narrativo", s.storyBeat],
+      ["Notas de producción", s.productionNotes],
+      ["Storyboard / referencia", sbRef(s.storyboard)],
+    ].filter(([, v]) => v && String(v).trim());
+  }
+  function uniqLabels(scenes, list, field) {
+    const out = [];
+    scenes.forEach((s) => { const l = labelOf(list, s[field]); if (l && out.indexOf(l) === -1) out.push(l); });
+    return out;
+  }
+  function arteData() {
+    const groups = groupByEscenario();
+    return {
+      documento: "GOLDEN — Brief de escenarios para Arte",
+      exportado: new Date().toISOString(),
+      cancion: { titulo: data.meta.title, duracion: data.meta.songDuration, version: data.meta.version },
+      nota: "Solo información visual/narrativa para diseño. Sin datos de gameplay ni letra.",
+      escenarios: groups.map((g) => ({
+        escenario: g.location || "(sin definir)",
+        momentosDelDia: uniqLabels(g.scenes, TOD, "timeOfDay"),
+        estadosDelMundo: uniqLabels(g.scenes, WS, "worldState"),
+        etapasNarrativas: uniqLabels(g.scenes, STAGES, "narrativeStage"),
+        rangoTiempo: g.scenes[0].startTime + "–" + g.scenes[g.scenes.length - 1].endTime,
+        escenas: g.scenes.map((s) => {
+          const o = { desde: s.startTime, hasta: s.endTime };
+          arteFields(s).forEach(([k, v]) => { o[k] = v; });
+          return o;
+        }),
+      })),
+    };
+  }
+  function arteMarkdown(a) {
+    const L = [];
+    L.push("# " + a.documento, "");
+    L.push("> Exportado " + a.exportado.slice(0, 10) + " · " + a.cancion.titulo + " " + a.cancion.version + " · duración " + a.cancion.duracion);
+    L.push("> " + a.nota, "");
+    L.push("**Escenarios:** " + a.escenarios.length + "  ·  **Escenas:** " + a.escenarios.reduce((n, g) => n + g.escenas.length, 0), "");
+    a.escenarios.forEach((g, i) => {
+      L.push("---", "");
+      L.push("## " + (i + 1) + ". " + g.escenario, "");
+      if (g.momentosDelDia.length) L.push("- **Momento del día:** " + g.momentosDelDia.join(", "));
+      if (g.estadosDelMundo.length) L.push("- **Estado del mundo:** " + g.estadosDelMundo.join(" → "));
+      if (g.etapasNarrativas.length) L.push("- **Etapa narrativa:** " + g.etapasNarrativas.join(", "));
+      L.push("- **Escenas:** " + g.escenas.length + " (" + g.rangoTiempo + ")", "");
+      L.push("### Escenas", "");
+      g.escenas.forEach((sc) => {
+        L.push("#### " + sc.desde + "–" + sc.hasta);
+        const keys = Object.keys(sc).filter((k) => k !== "desde" && k !== "hasta");
+        if (!keys.length) L.push("- _(sin detalles visuales todavía)_");
+        else keys.forEach((k) => L.push("- **" + k + ":** " + sc[k]));
+        L.push("");
+      });
+    });
+    return L.join("\n");
+  }
+  function exportArte() {
+    const a = arteData();
+    const stamp = new Date().toISOString().slice(0, 10);
+    const base = "golden-escenarios-arte-" + a.cancion.version + "-" + stamp;
+    download(base + ".md", arteMarkdown(a), "text/markdown");
+    download(base + ".json", JSON.stringify(a, null, 2), "application/json");
+    toast("Export para Arte listo (.md + .json)");
+  }
+
   function importJSON() {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
     inp.addEventListener("change", () => {
