@@ -3,13 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GOLDEN — Narrative & Gameplay Script</title>
+  <title>GOLDEN — Production Hub</title>
   <link rel="stylesheet" href="styles.css?v=46">
+  <link rel="stylesheet" href="hub.css?v=1">
 </head>
 <body>
-  <div class="app">
-    <header id="header" class="header"></header>
-    <main id="main"></main>
+  <div class="hub-brand" id="hub-brand"></div>
+  <nav class="hub-tabs" id="hub-tabs"></nav>
+
+  <div id="hub-views">
+    <section class="hub-view pad active" id="view-resumen"></section>
+
+    <section class="hub-view" id="view-script">
+      <div class="app">
+        <header id="header" class="header"></header>
+        <main id="main"></main>
+      </div>
+    </section>
+
+    <section class="hub-view pad" id="view-tracker"></section>
+
+    <section class="hub-view" id="view-cal"></section>
+
+    <section class="hub-view" id="view-guia">
+      <iframe class="hub-frame" src="guia-para-testear.html" title="Guía de testeo"></iframe>
+    </section>
   </div>
 
   <div id="overlay" class="overlay"></div>
@@ -18,5 +36,6 @@
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js?v=46"></script>
+  <script src="tracker.js?v=1"></script>
 </body>
 </html>
