@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOLDEN · Production Hub — MOCKUP</title>
+<style>
+  :root{
+    --bg:#0e1016; --bg-2:#151824; --bg-3:#1b1f2e; --bg-hover:#222738;
+    --line:#2a3042; --line-2:#363d52;
+    --text:#e7e9f0; --text-2:#a7adc0; --text-dim:#6f768c;
+    --accent:#d9a441; --accent-2:#f0c868;
+    --dev:#5b8bb5; --rev:#b5479b; --app:#5a8f7b; --brief:#737a8f; --deliv:#d9a441;
+    --radius:9px; --radius-s:6px;
+    --mono:"SF Mono","JetBrains Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:6px}
+
+  /* ---- Mockup banner ---- */
+  .mock-flag{background:repeating-linear-gradient(45deg,#1b1f2e,#1b1f2e 12px,#20242f 12px,#20242f 24px);
+    color:var(--accent-2);text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:5px;border-bottom:1px solid var(--line)}
+
+  /* ---- Top brand bar ---- */
+  .brand{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+  .brand h1{margin:0;font-size:22px;letter-spacing:4px;font-weight:800;
+    background:linear-gradient(90deg,var(--accent-2),var(--accent) 60%,#a97e28);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand .sub{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase}
+  .brand .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:1px;
+    padding:5px 11px;border:1px solid var(--line-2);border-radius:999px;color:var(--text-2)}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--app);box-shadow:0 0 8px var(--app)}
+  .pill.warn{border-color:#5c4a2a;color:var(--accent-2)}
+
+  /* ---- Tabs ---- */
+  .tabs{display:flex;gap:2px;padding:0 18px;background:var(--bg-2);border-bottom:1px solid var(--line)}
+  .tab{padding:12px 18px;font-weight:600;color:var(--text-dim);border-bottom:2px solid transparent;display:flex;align-items:center;gap:8px}
+  .tab:hover{color:var(--text-2)}
+  .tab.active{color:var(--accent-2);border-bottom-color:var(--accent)}
+  .tab .tcount{font-family:var(--mono);font-size:11px;background:var(--bg-3);padding:1px 7px;border-radius:999px;color:var(--text-2)}
+  .tab .done{color:var(--app)}
+
+  .view{display:none;padding:22px;max-width:1280px;margin:0 auto}
+  .view.active{display:block}
+  .view.view-full{padding:0;max-width:none}
+  .view.view-full.active{display:block}
+  .script-frame{width:100%;height:calc(100vh - 108px);border:none;display:block;background:var(--bg)}
+
+  /* identidad / permisos */
+  .ident{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+  .ident select{background:var(--bg-3);border:1px solid var(--line-2);color:var(--text);padding:6px 10px;border-radius:var(--radius-s);font-size:12px}
+  .mode-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;padding:4px 10px;border-radius:999px;font-weight:700}
+  .mode-pill.edit{color:var(--app);background:rgba(90,143,123,.14);border:1px solid #2f4a40}
+  .mode-pill.ro{color:var(--text-dim);background:var(--bg-3);border:1px solid var(--line-2)}
+  .readonly-note{display:none;margin-bottom:14px;padding:10px 14px;border:1px solid var(--line-2);border-radius:var(--radius-s);background:var(--bg-2);color:var(--text-dim);font-size:12.5px}
+  body.ro .readonly-note{display:block}
+  body.ro .edit-only{display:none !important}
+
+  h2.sec{font-size:13px;font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px;font-weight:700}
+
+  /* ---- Resumen ---- */
+  .next-banner{display:flex;align-items:center;gap:22px;background:linear-gradient(100deg,#1c1812,#151824 60%);
+    border:1px solid #5c4a2a;border-radius:var(--radius);padding:18px 22px;margin-bottom:22px}
+  .next-banner .big{font-size:40px;font-weight:800;color:var(--accent-2);line-height:1;font-family:var(--mono)}
+  .next-banner .nb-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase}
+  .next-banner .nb-obj{font-size:16px;font-weight:600;margin-top:3px}
+  .next-banner .nb-date{color:var(--text-2);font-size:13px;margin-top:2px}
+  .editable-field{border-radius:5px;padding:2px 5px;margin:0 -5px;transition:background .15s}
+  body:not(.ro) .editable-field{cursor:text}
+  body:not(.ro) .editable-field:hover{background:var(--bg-3);box-shadow:inset 0 0 0 1px var(--line-2)}
+  body:not(.ro) .editable-field:focus{background:var(--bg-3);box-shadow:inset 0 0 0 1px var(--accent);outline:none}
+
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .card .num{font-size:30px;font-weight:800;font-family:var(--mono)}
+  .card .lab{font-size:12px;color:var(--text-dim);margin-top:4px}
+  .card.alert .num{color:var(--rev)}
+
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+  .block{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .block h3{margin:0 0 12px;font-size:14px}
+  .mini-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .mini-row:last-child{border-bottom:none}
+  .mini-row .who{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#0e1016;flex-shrink:0}
+  .mini-row .txt{flex:1}
+  .mini-row .txt small{color:var(--text-dim);display:block}
+
+  /* ---- Status chips ---- */
+  .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;
+    padding:3px 9px;border-radius:999px;font-weight:600;white-space:nowrap}
+  .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .c-brief{color:var(--brief);background:rgba(115,122,143,.14)}
+  .c-dev{color:var(--dev);background:rgba(91,139,181,.14)}
+  .c-rev{color:var(--rev);background:rgba(181,71,155,.14)}
+  .c-app{color:var(--app);background:rgba(90,143,123,.14)}
+  .c-deliv{color:var(--deliv);background:rgba(217,164,65,.16)}
+
+  /* ---- Tracker ---- */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar select,.toolbar .seg{background:var(--bg-3);border:1px solid var(--line-2);color:var(--text);
+    padding:7px 11px;border-radius:var(--radius-s);font-size:13px}
+  .toolbar .seg{display:flex;gap:2px;padding:3px}
+  .toolbar .seg button{padding:5px 12px;border-radius:5px;color:var(--text-dim);font-weight:600}
+  .toolbar .seg button.on{background:var(--bg-hover);color:var(--accent-2)}
+  .toolbar .spacer{flex:1}
+  .toolbar .legend{display:flex;gap:6px;flex-wrap:wrap}
+
+  .disc{margin-bottom:22px}
+  .disc-head{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+  .disc-head .ico{font-size:17px}
+  .disc-head h3{margin:0;font-size:15px}
+  .disc-head .count{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+  .disc-head .pline{flex:1;height:1px;background:var(--line)}
+
+  table{width:100%;border-collapse:collapse;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  thead th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--text-dim);font-weight:700;padding:9px 14px;background:var(--bg-3);border-bottom:1px solid var(--line)}
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--bg-hover)}
+  td.asset{font-weight:600}
+  td.asset small{display:block;color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px;margin-top:2px}
+  .avatar{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:10.5px;font-weight:700;color:#0e1016}
+  .assignee{display:inline-flex;align-items:center;gap:8px}
+  .link-blk{font-family:var(--mono);font-size:11px;color:var(--dev);text-decoration:none}
+  .link-blk:hover{color:var(--accent-2)}
+  .deliv-tag{font-family:var(--mono);font-size:11px;color:var(--text-2)}
+
+  /* escenario con miniatura + pipeline Concept→3D */
+  .asset-thumb{display:flex;align-items:center;gap:11px}
+  .asset-thumb .thumb{width:62px;height:40px;border-radius:5px;object-fit:cover;flex-shrink:0;border:1px solid var(--line-2);background:var(--bg-3)}
+  .asset-thumb .thumb.empty{display:grid;place-items:center;color:var(--text-dim);font-size:16px}
+  body:not(.ro) .asset-thumb .thumb{cursor:pointer}
+  body:not(.ro) .asset-thumb .thumb:hover{border-color:var(--accent)}
+  .asset-thumb .thumb.drop-hover{border-color:var(--accent-2) !important;box-shadow:0 0 0 2px rgba(240,200,104,.4)}
+  .stage-cell{display:flex;align-items:center;gap:8px}
+  .stage-arrow{color:var(--text-dim);font-size:13px;text-align:center}
+  thead th.stage{text-align:center}
+  td.stage-td{text-align:left}
+  .mini-av{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:9.5px;font-weight:700;color:#0e1016}
+
+  /* ---- Placeholder views ---- */
+  .embed-box{border:1px dashed var(--line-2);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text-dim);background:var(--bg-2)}
+  .embed-box .ico{font-size:40px;margin-bottom:10px}
+  .embed-box b{color:var(--text-2)}
+  .note{font-size:12px;color:var(--text-dim);margin-top:10px}
+  .ghost-tl{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .ghost-tl .bar-row{display:flex;gap:4px;margin:8px 0}
+  .ghost-tl .bar-row>i{height:34px;border-radius:5px;opacity:.85}
+</style>
+</head>
+<body>
+<div class="mock-flag">◆ MOCKUP DE ESTRUCTURA — así se vería el Hub. Datos de ejemplo. No es la app final ◆</div>
+
+<div class="brand">
+  <h1>GOLDEN</h1>
+  <span class="sub">✦ Production Hub</span>
+  <div class="spacer"></div>
+  <span class="pill"><span class="dot"></span>Online · en vivo</span>
+  <span class="pill warn">⚑ Próxima entrega · en 7 días</span>
+  <span class="ident">
+    <span id="mode-pill" class="mode-pill ro">👁 SOLO LECTURA</span>
+    <button id="lock-btn" class="mode-pill edit" style="cursor:pointer" onclick="toggleLock()">🔒 Editar</button>
+  </span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="go('resumen',this)">◱ Resumen</button>
+  <button class="tab" onclick="go('script',this)">♪ Script <span class="tcount done">✓</span></button>
+  <button class="tab" onclick="go('tracker',this)">▦ Tracker <span class="tcount">24</span></button>
+  <button class="tab" onclick="go('cal',this)">▤ Calendario</button>
+  <button class="tab" onclick="go('guia',this)">⎙ Guía de testeo <span class="tcount done">✓</span></button>
+</div>
+
+<!-- ══════════ RESUMEN ══════════ -->
+<div class="view active" id="v-resumen">
+  <div class="next-banner">
+    <div style="flex:1;padding-right:24px">
+      <div class="nb-label">🗓 Objetivo de la semana <span class="edit-only" style="font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0">✎ editable</span></div>
+      <div class="nb-obj editable-field" id="week-field">Avanzar el sistema de puntaje y pulir el HUD de juego en TV</div>
+      <div class="nb-date">📅 <span class="editable-field" id="week-date">Semana del 20 al 24 oct</span></div>
+    </div>
+    <div style="width:1px;background:#5c4a2a;align-self:stretch"></div>
+    <div style="flex:1;padding-left:24px">
+      <div class="nb-label">⚑ Objetivo de la próxima entrega <span class="edit-only" style="font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0">✎ editable</span></div>
+      <div class="nb-obj editable-field" id="obj-field">Vertical slice jugable — primeros 0:30 de la canción en TV + control (build a Netflix)</div>
+      <div class="nb-date">📅 <span class="editable-field" id="date-field">Viernes 27 oct 2026</span></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="block">
+      <h3>🔄 En qué está cada uno ahora <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· se levanta del Tracker</small></h3>
+      <div class="mini-row">
+        <span class="who" style="background:#b5479b">PA</span>
+        <div class="txt">Pablo Altamiranda <small>Charting de la rueda — bloque 0:15–0:22</small></div>
+        <span class="chip c-dev">EN PROGRESO</span>
+      </div>
+      <div class="mini-row">
+        <span class="who" style="background:#b5479b">LM</span>
+        <div class="txt">Lucas Mallo <small>HUD de juego (TV) — rueda + score + combo</small></div>
+        <span class="chip c-dev">EN PROGRESO</span>
+      </div>
+      <div class="mini-row">
+        <span class="who" style="background:#8b5cf6">LS</span>
+        <div class="txt">Lautaro Schipizza <small>3D de Namsan Tower</small></div>
+        <span class="chip c-dev">EN PROGRESO</span>
+      </div>
+      <div class="mini-row">
+        <span class="who" style="background:#8b5cf6">BE</span>
+        <div class="txt">Belén <small>3D de Seúl noche · Bukchon</small></div>
+        <span class="chip c-dev">EN PROGRESO</span>
+      </div>
+      <div class="mini-row">
+        <span class="who" style="background:#8b5cf6">GA</span>
+        <div class="txt">Gastón <small>Concept de Golden City</small></div>
+        <span class="chip c-dev">EN PROGRESO</span>
+      </div>
+    </div>
+    <div class="block">
+      <h3>👥 Carga por persona · V1</h3>
+      <div class="mini-row"><span class="who" style="background:#4bb3c4">FH</span><div class="txt">Federico Heller<small>Director</small></div><b class="deliv-tag">👁</b></div>
+      <div class="mini-row"><span class="who" style="background:#d9a441">ST</span><div class="txt">Santiago Tereso<small>Producción</small></div><b class="deliv-tag">✎</b></div>
+      <div class="mini-row"><span class="who" style="background:#d9a441">LT</span><div class="txt">Lucila Trobbiani<small>Producción</small></div><b class="deliv-tag">✎</b></div>
+      <div class="mini-row"><span class="who" style="background:#b5479b">PA</span><div class="txt">Pablo Altamiranda<small>Lead Dev · Gameplay / integración</small></div><span class="chip c-dev">3</span></div>
+      <div class="mini-row"><span class="who" style="background:#b5479b">LM</span><div class="txt">Lucas Mallo<small>Dev · Gameplay / UI</small></div><span class="chip c-dev">2</span></div>
+      <div class="mini-row"><span class="who" style="background:#8b5cf6">LS</span><div class="txt">Lautaro Schipizza<small>Arte + Lead 3D</small></div><span class="chip c-rev">4</span></div>
+      <div class="mini-row"><span class="who" style="background:#8b5cf6">BE</span><div class="txt">Belén<small>3D Artist</small></div><span class="chip c-dev">2</span></div>
+      <div class="mini-row"><span class="who" style="background:#8b5cf6">GA</span><div class="txt">Gastón<small>3D Artist</small></div><span class="chip c-dev">2</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCRIPT ══════════ -->
+<div class="view view-full" id="v-script">
+  <iframe class="script-frame" src="index.html" title="GOLDEN Script"></iframe>
+</div>
+
+<!-- ══════════ TRACKER ══════════ -->
+<div class="view" id="v-tracker">
+  <h2 class="sec">Tracker de Producción — assets a generar, responsables y estado</h2>
+  <div class="readonly-note">👁 Estás viendo el Tracker en <b>solo lectura</b>. Para editar tareas, responsables y estados, tocá <b>🔒 Editar</b> arriba a la derecha e ingresá la clave (la tienen Lucila y Santiago).</div>
+  <div class="toolbar">
+    <div class="seg">
+      <button class="on">▦ Por departamento</button>
+      <button>▤ Por entrega</button>
+      <button>◳ Kanban</button>
+    </div>
+    <select><option>Persona: Todos</option><option>Arte</option><option>Gameplay</option><option>Audio</option><option>UI</option><option>QA</option></select>
+    <select><option>Entrega: V1 (27 oct)</option><option>V2</option><option>Final</option></select>
+    <button class="seg edit-only" style="color:var(--accent-2);border:1px solid #5c4a2a;background:var(--bg-3);padding:7px 12px;font-weight:600">+ Tarea</button>
+    <div class="spacer"></div>
+    <div class="legend">
+      <span class="chip c-brief">BRIEF</span>
+      <span class="chip c-dev">EN PROGRESO</span>
+      <span class="chip c-rev">REVIEW</span>
+      <span class="chip c-app">APROBADO</span>
+      <span class="chip c-deliv">ENTREGADO</span>
+    </div>
+  </div>
+
+  <!-- Narrativa -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">🎬</span><h3>Narrativa / Guion</h3><span class="count">3</span><span class="pline"></span></div>
+    <table><thead><tr><th style="width:34%">Asset</th><th>Responsable</th><th>Estado</th><th>Entrega</th><th>Link</th></tr></thead><tbody>
+      <tr><td class="asset">Beats narrativos 0:00–0:30 <small>intro · Seúl noche</small></td><td><span class="assignee"><span class="avatar" style="background:#d9a441">LT</span>Lucila</span></td><td><span class="chip c-app">APROBADO</span></td><td class="deliv-tag">V1</td><td><a class="link-blk" href="#">♪ scene-001</a></td></tr>
+      <tr><td class="asset">Localización — Seoul Streets <small>brief para Arte</small></td><td><span class="assignee"><span class="avatar" style="background:#d9a441">LT</span>Lucila</span></td><td><span class="chip c-app">APROBADO</span></td><td class="deliv-tag">V1</td><td><a class="link-blk" href="#">♪ scene-002</a></td></tr>
+      <tr><td class="asset">Arco de identidad demoníaca <small>setup narrativo</small></td><td><span class="assignee"><span class="avatar" style="background:#d9a441">LT</span>Lucila</span></td><td><span class="chip c-dev">EN PROGRESO</span></td><td class="deliv-tag">V2</td><td><a class="link-blk" href="#">♪ scene-003</a></td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- Arte / Escenarios — pipeline Concept → 3D con miniatura -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">🎨</span><h3>Arte / Escenarios</h3><span class="count">4 escenarios</span><span class="pline"></span></div>
+    <table><thead><tr>
+      <th style="width:30%">Escenario</th>
+      <th class="stage">① Concept</th>
+      <th class="stage">② 3D</th>
+      <th>Entrega</th>
+    </tr></thead><tbody>
+      <tr>
+        <td class="asset"><div class="asset-thumb"><img class="thumb" src="KPDH_Escenarios/film/06_bukchon_rumi_jinu.jpg" alt=""><div>Seúl noche · Bukchon<small>intro · 0:00–0:30</small></div></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-app">APROBADO</span><span class="mini-av" style="background:#4f6ba8" title="Concept — Lautaro">LS</span></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-rev">REVIEW</span><span class="mini-av" style="background:#8b5cf6" title="3D — equipo 3D">BE</span></div></td>
+        <td class="deliv-tag">V1</td>
+      </tr>
+      <tr>
+        <td class="asset"><div class="asset-thumb"><img class="thumb" src="KPDH_Escenarios/film/03_namsan_your_idol.jpg" alt=""><div>Namsan Tower<small>estribillo</small></div></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-app">APROBADO</span><span class="mini-av" style="background:#4f6ba8" title="Concept — Lautaro">LS</span></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-dev">EN PROGRESO</span><span class="mini-av" style="background:#8b5cf6" title="3D — equipo 3D">BE</span></div></td>
+        <td class="deliv-tag">V1</td>
+      </tr>
+      <tr>
+        <td class="asset"><div class="asset-thumb"><img class="thumb" src="KPDH_Escenarios/film/05_golden_city.jpg" alt=""><div>Golden City<small>consagración</small></div></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-rev">REVIEW</span><span class="mini-av" style="background:#4f6ba8" title="Concept — Lautaro">LS</span></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-brief">BRIEF</span><span class="mini-av" style="background:#8b5cf6" title="3D — equipo 3D">BE</span></div></td>
+        <td class="deliv-tag">V2</td>
+      </tr>
+      <tr>
+        <td class="asset"><div class="asset-thumb"><div class="thumb empty">＋</div><div>Demon Realm<small>puente · sin imagen aún</small></div></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-dev">EN PROGRESO</span><span class="mini-av" style="background:#4f6ba8" title="Concept — Lautaro">LS</span></div></td>
+        <td class="stage-td"><div class="stage-cell"><span class="chip c-brief">BRIEF</span><span class="mini-av" style="background:#8b5cf6" title="3D — equipo 3D">BE</span></div></td>
+        <td class="deliv-tag">V2</td>
+      </tr>
+    </tbody></table>
+  </div>
+
+  <!-- Gameplay -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">🎮</span><h3>Gameplay / Charting</h3><span class="count">4</span><span class="pline"></span></div>
+    <table><thead><tr><th style="width:34%">Asset</th><th>Responsable</th><th>Estado</th><th>Entrega</th><th>Link</th></tr></thead><tbody>
+      <tr><td class="asset">Mapeo de notas 0:00–0:15 <small>la rueda · frontal</small></td><td><span class="assignee"><span class="avatar" style="background:#b5479b">PA</span>Pablo A.</span></td><td><span class="chip c-app">APROBADO</span></td><td class="deliv-tag">V1</td><td><a class="link-blk" href="#">♪ scene-001</a></td></tr>
+      <tr><td class="asset">Mapeo de notas 0:15–0:30 <small>⛔ espera stems</small></td><td><span class="assignee"><span class="avatar" style="background:#b5479b">PA</span>Pablo A.</span></td><td><span class="chip c-rev">REVIEW</span></td><td class="deliv-tag">V1</td><td><a class="link-blk" href="#">♪ scene-004</a></td></tr>
+      <tr><td class="asset">Rueda vertical — feel de tapeo <small>timing window</small></td><td><span class="assignee"><span class="avatar" style="background:#b5479b">PA</span>Pablo A.</span></td><td><span class="chip c-dev">EN PROGRESO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">Niveles de dificultad <small>easy / normal / hard</small></td><td><span class="assignee"><span class="avatar" style="background:#b5479b">PA</span>Pablo A.</span></td><td><span class="chip c-brief">BRIEF</span></td><td class="deliv-tag">V2</td><td>—</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- Audio -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">🎵</span><h3>Audio</h3><span class="count">2</span><span class="pline"></span></div>
+    <table><thead><tr><th style="width:34%">Asset</th><th>Responsable</th><th>Estado</th><th>Entrega</th><th>Link</th></tr></thead><tbody>
+      <tr><td class="asset">Stems de la canción <small>sync a 3:14</small></td><td><span class="assignee"><span class="avatar" style="background:#5a8f7b">AU</span>Audio</span></td><td><span class="chip c-rev">REVIEW</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">SFX de tapeo / hit / miss <small>feedback sonoro</small></td><td><span class="assignee"><span class="avatar" style="background:#5a8f7b">AU</span>Audio</span></td><td><span class="chip c-app">APROBADO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- UI TV + Control -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">📺</span><h3>UI de TV + Control (celular)</h3><span class="count">4</span><span class="pline"></span></div>
+    <table><thead><tr><th style="width:34%">Asset</th><th>Responsable</th><th>Estado</th><th>Entrega</th><th>Link</th></tr></thead><tbody>
+      <tr><td class="asset">Lobby / pantalla de inicio (TV) <small>entrada por app Netflix</small></td><td><span class="assignee"><span class="avatar" style="background:#5b8bb5">UI</span>UI</span></td><td><span class="chip c-app">APROBADO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">HUD de juego (TV) <small>rueda + score + combo</small></td><td><span class="assignee"><span class="avatar" style="background:#5b8bb5">UI</span>UI</span></td><td><span class="chip c-dev">EN PROGRESO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">Pantalla de resultados (TV) <small>⛔ falta OK dirección</small></td><td><span class="assignee"><span class="avatar" style="background:#5b8bb5">UI</span>UI</span></td><td><span class="chip c-rev">REVIEW</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">Control remoto — vista de tapeo (celu) <small>emparejado con TV</small></td><td><span class="assignee"><span class="avatar" style="background:#5b8bb5">UI</span>UI</span></td><td><span class="chip c-dev">EN PROGRESO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- QA / Netflix -->
+  <div class="disc">
+    <div class="disc-head"><span class="ico">✅</span><h3>QA / Entrega Netflix</h3><span class="count">3</span><span class="pline"></span></div>
+    <table><thead><tr><th style="width:34%">Asset</th><th>Responsable</th><th>Estado</th><th>Entrega</th><th>Link</th></tr></thead><tbody>
+      <tr><td class="asset">Guía de testeo (VPN + build) <small>onboarding del equipo</small></td><td><span class="assignee"><span class="avatar" style="background:#5a8f7b">QA</span>QA</span></td><td><span class="chip c-deliv">ENTREGADO</span></td><td class="deliv-tag">V1</td><td><a class="link-blk" href="guia-para-testear.html">⎙ Guía</a></td></tr>
+      <tr><td class="asset">Build vertical slice en VPN <small>jugable TV + control</small></td><td><span class="assignee"><span class="avatar" style="background:#5a8f7b">QA</span>QA</span></td><td><span class="chip c-dev">EN PROGRESO</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+      <tr><td class="asset">Specs de entrega Netflix <small>⛔ resolución / framerate</small></td><td><span class="assignee"><span class="avatar" style="background:#5a8f7b">QA</span>QA</span></td><td><span class="chip c-brief">BRIEF</span></td><td class="deliv-tag">V1</td><td>—</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ══════════ CALENDARIO ══════════ -->
+<div class="view" id="v-cal">
+  <h2 class="sec">Calendario / Entregas</h2>
+  <div class="embed-box">
+    <div class="ico">▤</div>
+    <b>Acá se embebe tu calendario de entregas</b> (Google Calendar / Notion vía iframe)
+    <div class="note">V1 · 27 oct — Vertical slice &nbsp;|&nbsp; V2 · 10 nov &nbsp;|&nbsp; Final · TBD<br>
+    Sincronizado con la columna "Entrega" del Tracker.</div>
+  </div>
+</div>
+
+<!-- ══════════ GUIA ══════════ -->
+<div class="view view-full" id="v-guia">
+  <iframe class="script-frame" src="guia-para-testear.html" title="Guía de testeo"></iframe>
+</div>
+
+<script>
+  function go(id, btn){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('v-'+id).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    window.scrollTo(0,0);
+  }
+  var DEMO_KEY='golden';          // en la app real: clave que configuran Lucila y Santiago
+  function setEditable(on){
+    ['week-field','week-date','obj-field','date-field'].forEach(function(id){var e=document.getElementById(id); if(e) e.contentEditable = on?'true':'false';});
+  }
+  document.body.classList.add('ro'); setEditable(false);   // arranca en solo lectura
+  function toggleLock(){
+    var btn=document.getElementById('lock-btn'), p=document.getElementById('mode-pill');
+    if(document.body.classList.contains('ro')){
+      var k=prompt('Clave de edición (demo: "golden"):');
+      if(k===null) return;
+      if(k!==DEMO_KEY){ alert('Clave incorrecta'); return; }
+      document.body.classList.remove('ro'); setEditable(true);
+      p.className='mode-pill edit'; p.textContent='✎ EDICIÓN';
+      btn.textContent='🔓 Bloquear';
+    } else {
+      document.body.classList.add('ro'); setEditable(false);
+      p.className='mode-pill ro'; p.textContent='👁 SOLO LECTURA';
+      btn.textContent='🔒 Editar';
+    }
+  }
+  // drag & drop de miniaturas de escenario (demo: preview local; en la app sube a Supabase Storage)
+  function setThumb(cell, url){
+    var t=cell.querySelector('.thumb');
+    if(t && t.tagName==='IMG'){ t.src=url; return; }
+    var img=document.createElement('img'); img.className='thumb'; img.src=url; img.alt='';
+    if(t) t.replaceWith(img);
+  }
+  document.querySelectorAll('#v-tracker .asset-thumb').forEach(function(cell){
+    cell.addEventListener('dragover', function(e){
+      e.preventDefault();
+      if(document.body.classList.contains('ro')) return;
+      var t=cell.querySelector('.thumb'); if(t) t.classList.add('drop-hover');
+    });
+    cell.addEventListener('dragleave', function(){ var t=cell.querySelector('.thumb'); if(t) t.classList.remove('drop-hover'); });
+    cell.addEventListener('drop', function(e){
+      e.preventDefault();
+      var t=cell.querySelector('.thumb'); if(t) t.classList.remove('drop-hover');
+      if(document.body.classList.contains('ro')){ alert('Desbloqueá edición (🔒 Editar) para cambiar la imagen.'); return; }
+      var f=e.dataTransfer.files && e.dataTransfer.files[0];
+      if(!f) return;
+      if(!/^image\//.test(f.type)){ alert('Arrastrá un archivo de imagen.'); return; }
+      setThumb(cell, URL.createObjectURL(f));
+    });
+  });
+  // demo: toggle de la barra segmentada del tracker
+  document.querySelectorAll('.seg').forEach(seg=>{
+    seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    }));
+  });
+</script>
+</body>
+</html>
