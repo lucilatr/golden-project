@@ -50,6 +50,16 @@
     filterDept: "",
   };
 
+  // Secciones colapsadas (preferencia por navegador)
+  const COLLAPSE_KEY = "golden_collapsed";
+  let collapsed = {};
+  try { collapsed = JSON.parse(localStorage.getItem(COLLAPSE_KEY) || "{}") || {}; } catch (e) { collapsed = {}; }
+  function toggleCollapse(id) {
+    collapsed[id] = !collapsed[id];
+    try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsed)); } catch (e) {}
+    renderTracker();
+  }
+
   /* ---------------- Helpers DOM ---------------- */
   const el = (id) => document.getElementById(id);
   function h(tag, attrs, kids) {
@@ -436,7 +446,8 @@
     if (!ui.filterDept || ui.filterDept === "escenarios") {
       const scs = data.scenarios.filter((s) => matchP([s.conceptAssignee, s.modelAssignee]));
       const sec = h("div", { class: "dept" });
-      const head = h("div", { class: "dept-head" }, [
+      const head = h("div", { class: "dept-head", onclick: (e) => { if (!e.target.closest("button")) toggleCollapse("escenarios"); } }, [
+        h("span", { class: "caret" }, collapsed["escenarios"] ? "▸" : "▾"),
         h("span", { class: "ico" }, "🎨"), h("h3", {}, "Escenarios"),
         h("span", { class: "count" }, scs.length + " · Concept → 3D"), h("span", { class: "pline" }),
       ]);
@@ -478,7 +489,7 @@
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar “" + s.name + "”?")) { persistDeleteScenario(s); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
-      tbl.appendChild(body); sec.appendChild(tbl); host.appendChild(sec);
+      tbl.appendChild(body); if (collapsed["escenarios"]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     }
 
     // Departamentos de tareas
@@ -487,7 +498,8 @@
       const tasks = data.tasks.filter((t) => t.dept === d.id && matchP([t.assignee]));
       if (ui.filterPerson && !tasks.length) return;
       const sec = h("div", { class: "dept" });
-      const head = h("div", { class: "dept-head" }, [
+      const head = h("div", { class: "dept-head", onclick: (e) => { if (!e.target.closest("button")) toggleCollapse(d.id); } }, [
+        h("span", { class: "caret" }, collapsed[d.id] ? "▸" : "▾"),
         h("span", { class: "ico" }, d.ico), h("h3", {}, d.label),
         h("span", { class: "count" }, String(tasks.length)), h("span", { class: "pline" }),
       ]);
@@ -509,7 +521,7 @@
         body.appendChild(tr);
       });
       if (!tasks.length) body.appendChild(h("tr", {}, h("td", { colspan: ui.editable ? 5 : 4 }, h("span", { class: "mini-empty" }, "Sin tareas todavía."))));
-      tbl.appendChild(body); sec.appendChild(tbl); host.appendChild(sec);
+      tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
 
