@@ -272,55 +272,67 @@
     const host = el("view-resumen"); if (!host) return; host.innerHTML = "";
     const m = data.meta;
 
+    // Objetivo de la semana — a lo ancho, editable a mano (multilínea)
     const banner = h("div", { class: "next-banner" });
-    const left = h("div", { class: "nb-col left" });
-    left.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("🗓 Objetivo de la semana "),
+    const col = h("div", { style: "flex:1;min-width:0" });
+    col.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("🗓 Objetivo de la semana "),
       ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    left.appendChild(editField(m.weekObjective, (v) => { m.weekObjective = v; persistMeta(); }, "nb-obj", true));
+    col.appendChild(editField(m.weekObjective, (v) => { m.weekObjective = v; persistMeta(); }, "nb-obj", true));
     const wd = h("div", { class: "nb-date" }); wd.appendChild(document.createTextNode("📅 "));
     wd.appendChild(editField(m.weekDate, (v) => { m.weekDate = v; persistMeta(); }, ""));
-    left.appendChild(wd);
-
-    const right = h("div", { class: "nb-col right" });
-    right.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("⚑ Objetivo de la próxima entrega "),
-      ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    right.appendChild(editField(m.deliveryObjective, (v) => { m.deliveryObjective = v; persistMeta(); }, "nb-obj", true));
-    const dd = h("div", { class: "nb-date" }); dd.appendChild(document.createTextNode("📅 "));
-    dd.appendChild(editField(m.deliveryDate, (v) => { m.deliveryDate = v; persistMeta(); }, ""));
-    right.appendChild(dd);
-
-    banner.appendChild(left); banner.appendChild(h("div", { class: "nb-div" })); banner.appendChild(right);
+    col.appendChild(wd);
+    banner.appendChild(col);
     host.appendChild(banner);
 
-    // Tareas marcadas para la próxima entrega de Netflix
+    // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
     const nf = h("div", { class: "block", style: "margin-bottom:18px" });
-    nf.appendChild(h("h3", { html: '🎯 Apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· marcá el tilde Netflix en el Tracker</small>' }));
-    const nfItems = [];
-    data.tasks.filter((t) => t.netflix).forEach((t) => nfItems.push({ who: t.assignee, what: t.title, status: t.status }));
-    data.scenarios.filter((s) => s.netflix).forEach((s) => nfItems.push({ who: s.modelAssignee || s.conceptAssignee, what: s.name + " · escenario", status: s.modelStatus }));
-    if (!nfItems.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Netflix” en el Tracker."));
-    nfItems.forEach((o) => {
-      const mm = member(o.who); const sdef = st(o.status);
-      nf.appendChild(h("div", { class: "mini-row" }, [
+    nf.appendChild(h("h3", { html: '🎯 Apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Netflix' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
+    const nfList = [];
+    data.tasks.forEach((t) => { if (t.netflix) nfList.push(t); });
+    data.scenarios.forEach((s) => { if (s.netflix) nfList.push(s); });
+    nfList.sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
+    if (!nfList.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Netflix” en el Tracker."));
+    let dragIdx = null;
+    nfList.forEach((obj, idx) => {
+      const isTask = ("title" in obj);
+      const who = isTask ? obj.assignee : (obj.modelAssignee || obj.conceptAssignee);
+      const what = isTask ? obj.title : (obj.name + " · escenario");
+      const stat = isTask ? obj.status : obj.modelStatus;
+      const mm = member(who); const sdef = st(stat);
+      const row = h("div", { class: "mini-row" + (ui.editable ? " nf-drag" : "") }, [
+        ...(ui.editable ? [h("span", { class: "drag-handle", title: "Arrastrá para reordenar" }, "⠿")] : []),
         h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
-        h("div", { class: "txt" }, [document.createTextNode(o.what), h("small", {}, mm ? mm.name : "Sin asignar")]),
+        h("div", { class: "txt" }, [document.createTextNode(what), h("small", {}, mm ? mm.name : "Sin asignar")]),
         h("span", { class: "chip " + sdef.cls }, sdef.label.toUpperCase()),
-      ]));
+      ]);
+      if (ui.editable) {
+        row.setAttribute("draggable", "true");
+        row.addEventListener("dragstart", (e) => { dragIdx = idx; row.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+        row.addEventListener("dragend", () => row.classList.remove("dragging"));
+        row.addEventListener("dragover", (e) => { e.preventDefault(); });
+        row.addEventListener("drop", (e) => {
+          e.preventDefault();
+          if (dragIdx == null || dragIdx === idx) return;
+          const moved = nfList.splice(dragIdx, 1)[0];
+          nfList.splice(idx, 0, moved);
+          nfList.forEach((o, i) => { o.pri = i; if ("title" in o) persistTask(o); else persistScenario(o); });
+          dragIdx = null; renderResumen();
+        });
+      }
+      nf.appendChild(row);
     });
     host.appendChild(nf);
 
-    const grid = h("div", { class: "two-col" });
-
-    // En qué está cada uno ahora (status == dev)
+    // En qué está cada uno ahora (En progreso), SIN las de Netflix (ya están arriba)
     const ob = h("div", { class: "block" });
     ob.appendChild(h("h3", { html: '🔄 En qué está cada uno ahora <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· se levanta del Tracker</small>' }));
     const ongoing = [];
-    data.tasks.filter((t) => t.status === "dev").forEach((t) => ongoing.push({ who: t.assignee, what: t.title }));
-    data.scenarios.forEach((s) => {
+    data.tasks.filter((t) => t.status === "dev" && !t.netflix).forEach((t) => ongoing.push({ who: t.assignee, what: t.title }));
+    data.scenarios.filter((s) => !s.netflix).forEach((s) => {
       if (s.conceptStatus === "dev") ongoing.push({ who: s.conceptAssignee, what: "Concept de " + s.name });
       if (s.modelStatus === "dev") ongoing.push({ who: s.modelAssignee, what: "3D de " + s.name });
     });
-    if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso”. Marcá tareas con ese estado en el Tracker."));
+    if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso” (sin contar las de Netflix)."));
     ongoing.forEach((o) => {
       const mm = member(o.who);
       ob.appendChild(h("div", { class: "mini-row" }, [
@@ -329,23 +341,7 @@
         h("span", { class: "chip c-dev" }, "EN PROGRESO"),
       ]));
     });
-    grid.appendChild(ob);
-
-    // Equipo
-    const tb = h("div", { class: "block" });
-    tb.appendChild(h("h3", {}, "👥 Equipo"));
-    TEAM.forEach((mm) => {
-      const count = data.tasks.filter((t) => t.assignee === mm.id).length +
-        data.scenarios.filter((s) => s.conceptAssignee === mm.id || s.modelAssignee === mm.id).length;
-      const edits = mm.id === "lt" || mm.id === "st";
-      tb.appendChild(h("div", { class: "mini-row" }, [
-        h("span", { class: "who", style: "background:" + mm.color }, mm.initials),
-        h("div", { class: "txt" }, [document.createTextNode(mm.name), h("small", {}, mm.role)]),
-        h("span", { class: "deliv-tag" }, edits ? "✎" : (mm.id === "fh" ? "👁" : (count ? String(count) : "—"))),
-      ]));
-    });
-    grid.appendChild(tb);
-    host.appendChild(grid);
+    host.appendChild(ob);
   }
 
   /* ============================================================
