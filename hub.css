@@ -86,6 +86,12 @@ body:not(.hub-ro) .editable-field:focus{background:var(--bg-3);box-shadow:inset 
 .btn-hub.accent{color:var(--accent-2);border-color:#5c4a2a}
 .btn-hub:hover{border-color:var(--accent)}
 
+/* ---- Alta rápida de tareas ---- */
+.quick-add{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg-2);border:1px solid #5c4a2a;border-radius:var(--radius);padding:12px 14px;margin-bottom:18px}
+.quick-add .qa-label{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-2);font-weight:700}
+.quick-add select,.quick-add input{background:var(--bg-3);border:1px solid var(--line-2);color:var(--text);padding:8px 11px;border-radius:var(--radius-s);font-size:13px}
+.quick-add input{flex:1;min-width:200px}
+
 /* ---- Dept sections + tables ---- */
 .dept{margin-bottom:22px}
 .dept-head{display:flex;align-items:center;gap:10px;margin:0 0 10px}

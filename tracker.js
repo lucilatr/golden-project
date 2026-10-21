@@ -365,6 +365,32 @@
     const host = el("view-tracker"); if (!host) return; host.innerHTML = "";
     host.appendChild(h("h2", { class: "sec" }, "Tracker de Producción — assets, responsables y estado"));
 
+    // alta rápida de tareas (arriba de todo, solo en edición)
+    if (ui.editable) {
+      const qa = h("div", { class: "quick-add edit-only" });
+      qa.appendChild(h("span", { class: "qa-label" }, "➕ Agregar tarea"));
+      const titleInp = h("input", { type: "text", placeholder: "Escribí la tarea…" });
+      const depSel = h("select", { title: "Departamento" });
+      DEPTS.forEach((d) => depSel.appendChild(h("option", { value: d.id }, d.ico + "  " + d.label)));
+      const whoSel = h("select", { title: "Responsable" });
+      whoSel.appendChild(h("option", { value: "" }, "Responsable…"));
+      TEAM.forEach((m) => whoSel.appendChild(h("option", { value: m.id }, m.name)));
+      const stSel = h("select", { title: "Estado" });
+      STATUS.forEach((s) => stSel.appendChild(h("option", { value: s.id }, s.label)));
+      const add = () => {
+        const title = titleInp.value.trim();
+        if (!title) { titleInp.focus(); return; }
+        const t = { id: uid("t"), dept: depSel.value, title, assignee: whoSel.value, status: stSel.value, target: "" };
+        data.tasks.push(t); persistTask(t);
+        const d = (DEPTS.find((x) => x.id === depSel.value) || {}).label || "";
+        toast("Tarea agregada en " + d); renderTracker();
+      };
+      const btn = h("button", { class: "btn-hub accent", onclick: add }, "Agregar");
+      titleInp.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+      qa.appendChild(titleInp); qa.appendChild(depSel); qa.appendChild(whoSel); qa.appendChild(stSel); qa.appendChild(btn);
+      host.appendChild(qa);
+    }
+
     // toolbar
     const tb = h("div", { class: "hub-toolbar" });
     const selP = h("select"); selP.appendChild(h("option", { value: "" }, "Persona: Todos"));
