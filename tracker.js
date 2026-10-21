@@ -112,6 +112,7 @@
         .then(({ error }) => { if (error) toast("No se pudo guardar"); }, () => toast("No se pudo guardar"));
     },
     del(id) { this.sb.from("tracker_items").delete().eq("id", id).then(() => {}, () => {}); },
+    async clearItems() { await this.sb.from("tracker_items").delete().eq("doc_id", DOC).neq("kind", "meta"); },
     subscribe() {
       this.sb.channel("rt-tracker")
         .on("postgres_changes", { event: "*", schema: "public", table: "tracker_items", filter: "doc_id=eq." + DOC }, () => this.refresh())
@@ -374,6 +375,7 @@
     [{ id: "escenarios", label: "Arte / Escenarios" }].concat(DEPTS).forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
     selD.addEventListener("change", () => { ui.filterDept = selD.value; renderTracker(); });
     tb.appendChild(selD);
+    if (ui.editable) tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas y escenarios" }, "🗑 Vaciar"));
     tb.appendChild(h("span", { class: "spacer" }));
     const legend = h("div", { class: "legend" });
     STATUS.forEach((s) => legend.appendChild(h("span", { class: "chip " + s.cls }, s.label.toUpperCase())));
@@ -466,6 +468,12 @@
   function addTask(dept) {
     const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", target: "" };
     data.tasks.push(t); persistTask(t); renderTracker();
+  }
+  async function clearAll() {
+    if (!confirm("¿Vaciar TODO el Tracker (tareas y escenarios)?\nEsto no se puede deshacer. Los objetivos del Resumen se mantienen.")) return;
+    data.tasks = []; data.scenarios = [];
+    if (Sync.enabled) { try { await Sync.clearItems(); } catch (e) { toast("No se pudo vaciar"); return; } } else saveLocal();
+    renderBrand(); renderTracker(); toast("Tracker vaciado — agregá tareas con “+ Tarea”");
   }
   function addScenario() {
     const s = { id: uid("sc"), name: "Nuevo escenario", note: "", thumbUrl: "", conceptStatus: "brief", conceptAssignee: "", modelStatus: "brief", modelAssignee: "", target: "" };
