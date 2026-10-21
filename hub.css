@@ -51,6 +51,7 @@ body.hub-ro .edit-only{display:none !important}
 .nb-obj{font-size:16px;font-weight:600;line-height:1.35}
 .nb-date{color:var(--text-2);font-size:13px;margin-top:4px}
 .editable-field{border-radius:5px;padding:2px 5px;margin:0 -5px;transition:background .15s;outline:none}
+.editable-field.ml{white-space:pre-wrap}
 body:not(.hub-ro) .editable-field{cursor:text}
 body:not(.hub-ro) .editable-field:hover{background:var(--bg-3);box-shadow:inset 0 0 0 1px var(--line-2)}
 body:not(.hub-ro) .editable-field:focus{background:var(--bg-3);box-shadow:inset 0 0 0 1px var(--accent)}

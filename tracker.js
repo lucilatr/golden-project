@@ -251,12 +251,13 @@
   /* ============================================================
      RESUMEN
      ============================================================ */
-  function editField(value, onSave, cls) {
-    const n = h("div", { class: (cls || "") + " editable-field" }, value || "");
+  function editField(value, onSave, cls, multiline) {
+    const n = h("div", { class: (cls || "") + " editable-field" + (multiline ? " ml" : "") }, value || "");
     n.contentEditable = ui.editable ? "true" : "false";
     if (ui.editable) {
-      n.addEventListener("blur", () => { const v = n.textContent.trim(); onSave(v); });
-      n.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); n.blur(); } });
+      n.addEventListener("blur", () => { const v = (multiline ? n.innerText : n.textContent).replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "").replace(/^\s+/, ""); onSave(v); });
+      // en fechas (una línea) Enter cierra; en objetivos (multilínea) Enter agrega línea
+      if (!multiline) n.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); n.blur(); } });
     }
     return n;
   }
@@ -268,7 +269,7 @@
     const left = h("div", { class: "nb-col left" });
     left.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("🗓 Objetivo de la semana "),
       ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    left.appendChild(editField(m.weekObjective, (v) => { m.weekObjective = v; persistMeta(); }, "nb-obj"));
+    left.appendChild(editField(m.weekObjective, (v) => { m.weekObjective = v; persistMeta(); }, "nb-obj", true));
     const wd = h("div", { class: "nb-date" }); wd.appendChild(document.createTextNode("📅 "));
     wd.appendChild(editField(m.weekDate, (v) => { m.weekDate = v; persistMeta(); }, ""));
     left.appendChild(wd);
@@ -276,7 +277,7 @@
     const right = h("div", { class: "nb-col right" });
     right.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("⚑ Objetivo de la próxima entrega "),
       ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    right.appendChild(editField(m.deliveryObjective, (v) => { m.deliveryObjective = v; persistMeta(); }, "nb-obj"));
+    right.appendChild(editField(m.deliveryObjective, (v) => { m.deliveryObjective = v; persistMeta(); }, "nb-obj", true));
     const dd = h("div", { class: "nb-date" }); dd.appendChild(document.createTextNode("📅 "));
     dd.appendChild(editField(m.deliveryDate, (v) => { m.deliveryDate = v; persistMeta(); }, ""));
     right.appendChild(dd);
