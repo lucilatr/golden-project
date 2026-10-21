@@ -105,6 +105,9 @@ body:not(.hub-ro) .editable-field:focus{background:var(--bg-3);box-shadow:inset 
 .hub-view table{width:100%;border-collapse:collapse;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .hub-view thead th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);font-weight:700;padding:9px 14px;background:var(--bg-3);border-bottom:1px solid var(--line)}
 .hub-view thead th.center{text-align:center}
+.hub-view td.center{text-align:center}
+.nf-check{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.nf-check input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 .hub-view tbody td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 .hub-view tbody tr:last-child td{border-bottom:none}
 .hub-view tbody tr:hover{background:var(--bg-hover)}

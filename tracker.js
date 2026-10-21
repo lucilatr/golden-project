@@ -41,9 +41,6 @@
   ];
   const st = (id) => STATUS.find((s) => s.id === id) || STATUS[0];
 
-  // "Apunta a": a qué objetivo sirve la tarea (valores fijos)
-  const TARGETS = ["", "Entrega Netflix", "Avance juego"];
-
   /* ---------------- Estado ---------------- */
   let data = { tasks: [], scenarios: [], meta: {} };
   const ui = {
@@ -166,7 +163,7 @@
 
   /* ---------------- Seed inicial ---------------- */
   function seed() {
-    const T = (id, dept, title, assignee, status, target) => ({ id, dept, title, assignee, status, target: target || "" });
+    const T = (id, dept, title, assignee, status, target) => ({ id, dept, title, assignee, status, netflix: target === "Entrega Netflix" });
     return {
       meta: {
         weekObjective: "Avanzar el sistema de puntaje y pulir el HUD de juego en TV",
@@ -191,10 +188,10 @@
         T("t-qa3", "qa", "Specs de entrega Netflix · resolución / framerate", "lt", "brief", "Entrega Netflix"),
       ],
       scenarios: [
-        { id: "sc-1", name: "Seúl noche · Bukchon", note: "intro · 0:00–0:30", thumbUrl: "", conceptStatus: "approved", conceptAssignee: "ls", modelStatus: "dev", modelAssignee: "be", target: "Entrega Netflix" },
-        { id: "sc-2", name: "Namsan Tower", note: "estribillo", thumbUrl: "", conceptStatus: "approved", conceptAssignee: "ls", modelStatus: "dev", modelAssignee: "ls", target: "Entrega Netflix" },
-        { id: "sc-3", name: "Golden City", note: "consagración", thumbUrl: "", conceptStatus: "review", conceptAssignee: "ga", modelStatus: "brief", modelAssignee: "", target: "Avance juego" },
-        { id: "sc-4", name: "Demon Realm", note: "puente", thumbUrl: "", conceptStatus: "dev", conceptAssignee: "ls", modelStatus: "brief", modelAssignee: "", target: "Avance juego" },
+        { id: "sc-1", name: "Seúl noche · Bukchon", note: "intro · 0:00–0:30", thumbUrl: "", conceptStatus: "approved", conceptAssignee: "ls", modelStatus: "dev", modelAssignee: "be", netflix: true },
+        { id: "sc-2", name: "Namsan Tower", note: "estribillo", thumbUrl: "", conceptStatus: "approved", conceptAssignee: "ls", modelStatus: "dev", modelAssignee: "ls", netflix: true },
+        { id: "sc-3", name: "Golden City", note: "consagración", thumbUrl: "", conceptStatus: "review", conceptAssignee: "ga", modelStatus: "brief", modelAssignee: "", netflix: false },
+        { id: "sc-4", name: "Demon Realm", note: "puente", thumbUrl: "", conceptStatus: "dev", conceptAssignee: "ls", modelStatus: "brief", modelAssignee: "", netflix: false },
       ],
     };
   }
@@ -285,6 +282,23 @@
     banner.appendChild(left); banner.appendChild(h("div", { class: "nb-div" })); banner.appendChild(right);
     host.appendChild(banner);
 
+    // Tareas marcadas para la próxima entrega de Netflix
+    const nf = h("div", { class: "block", style: "margin-bottom:18px" });
+    nf.appendChild(h("h3", { html: '🎯 Apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· marcá el tilde Netflix en el Tracker</small>' }));
+    const nfItems = [];
+    data.tasks.filter((t) => t.netflix).forEach((t) => nfItems.push({ who: t.assignee, what: t.title, status: t.status }));
+    data.scenarios.filter((s) => s.netflix).forEach((s) => nfItems.push({ who: s.modelAssignee || s.conceptAssignee, what: s.name + " · escenario", status: s.modelStatus }));
+    if (!nfItems.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Netflix” en el Tracker."));
+    nfItems.forEach((o) => {
+      const mm = member(o.who); const sdef = st(o.status);
+      nf.appendChild(h("div", { class: "mini-row" }, [
+        h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
+        h("div", { class: "txt" }, [document.createTextNode(o.what), h("small", {}, mm ? mm.name : "Sin asignar")]),
+        h("span", { class: "chip " + sdef.cls }, sdef.label.toUpperCase()),
+      ]));
+    });
+    host.appendChild(nf);
+
     const grid = h("div", { class: "two-col" });
 
     // En qué está cada uno ahora (status == dev)
@@ -350,12 +364,12 @@
     if (!ui.editable) { const mm = member(obj[field]); return mm ? h("span", { class: "mini-av", style: "background:" + mm.color, title: mm.name }, mm.initials) : h("span", { class: "deliv-tag" }, "—"); }
     return assigneeCell(obj, field, persist);
   }
-  function targetCell(obj, persist) {
-    if (!ui.editable) return h("span", { class: "deliv-tag" }, obj.target || "—");
-    const sel = h("select", { class: "cell-edit" });
-    TARGETS.forEach((t) => { const o = h("option", { value: t }, t || "—"); if ((obj.target || "") === t) o.selected = true; sel.appendChild(o); });
-    sel.addEventListener("change", () => { obj.target = sel.value; persist(); });
-    return sel;
+  // Tilde "Netflix": marca que la tarea apunta a la próxima entrega prioritaria
+  function netflixCell(obj, persist) {
+    if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "NETFLIX") : h("span", { class: "deliv-tag" }, "—");
+    const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.netflix;
+    cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); if (ui.view === "resumen") {} });
+    return h("label", { class: "nf-check", title: "Apunta a la próxima entrega de Netflix" }, [cb]);
   }
   function titleCell(obj, persist, subField) {
     const wrap = h("td", { class: "asset" });
@@ -385,19 +399,17 @@
       whoSel.addEventListener("change", () => { const mm = member(whoSel.value); if (mm && mm.dept) depSel.value = mm.dept; });
       const stSel = h("select", { title: "Estado" });
       STATUS.forEach((s) => stSel.appendChild(h("option", { value: s.id }, s.label)));
-      const tgtSel = h("select", { title: "Apunta a" });
-      TARGETS.forEach((t) => tgtSel.appendChild(h("option", { value: t }, t || "Apunta a…")));
       const add = () => {
         const title = titleInp.value.trim();
         if (!title) { titleInp.focus(); return; }
-        const t = { id: uid("t"), dept: depSel.value, title, assignee: whoSel.value, status: stSel.value, target: tgtSel.value };
+        const t = { id: uid("t"), dept: depSel.value, title, assignee: whoSel.value, status: stSel.value, netflix: false };
         data.tasks.push(t); persistTask(t);
         const d = (DEPTS.find((x) => x.id === depSel.value) || {}).label || "";
         toast("Tarea agregada en " + d); renderTracker();
       };
       const btn = h("button", { class: "btn-hub accent", onclick: add }, "Agregar");
       titleInp.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
-      qa.appendChild(titleInp); qa.appendChild(depSel); qa.appendChild(whoSel); qa.appendChild(stSel); qa.appendChild(tgtSel); qa.appendChild(btn);
+      qa.appendChild(titleInp); qa.appendChild(depSel); qa.appendChild(whoSel); qa.appendChild(stSel); qa.appendChild(btn);
       host.appendChild(qa);
     }
 
@@ -434,7 +446,7 @@
       tbl.appendChild(h("thead", {}, h("tr", {}, [
         h("th", { style: "width:30%" }, "Escenario"),
         h("th", { class: "center" }, "① Concept"), h("th", { class: "center" }, "② 3D"),
-        h("th", {}, "Apunta a"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
+        h("th", { class: "center" }, "Netflix"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
       ])));
       const body = h("tbody");
       scs.forEach((s) => {
@@ -461,8 +473,8 @@
         tr.appendChild(h("td", {}, h("div", { class: "stage-cell" }, [statusCell(s, "conceptStatus", () => persistScenario(s)), miniAssignee(s, "conceptAssignee", () => persistScenario(s))])));
         // 3d
         tr.appendChild(h("td", {}, h("div", { class: "stage-cell" }, [statusCell(s, "modelStatus", () => persistScenario(s)), miniAssignee(s, "modelAssignee", () => persistScenario(s))])));
-        // target
-        tr.appendChild(h("td", {}, targetCell(s, () => persistScenario(s))));
+        // netflix
+        tr.appendChild(h("td", { class: "center" }, netflixCell(s, () => persistScenario(s))));
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar “" + s.name + "”?")) { persistDeleteScenario(s); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
@@ -484,7 +496,7 @@
       const tbl = h("table");
       tbl.appendChild(h("thead", {}, h("tr", {}, [
         h("th", { style: "width:40%" }, "Tarea"), h("th", {}, "Responsable"),
-        h("th", {}, "Estado"), h("th", {}, "Apunta a"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
+        h("th", {}, "Estado"), h("th", { class: "center" }, "Netflix"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
       ])));
       const body = h("tbody");
       tasks.forEach((t) => {
@@ -492,7 +504,7 @@
         tr.appendChild(titleCell(t, () => persistTask(t), "_none"));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
-        tr.appendChild(h("td", {}, targetCell(t, () => persistTask(t))));
+        tr.appendChild(h("td", { class: "center" }, netflixCell(t, () => persistTask(t))));
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
@@ -502,7 +514,7 @@
   }
 
   function addTask(dept) {
-    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", target: "" };
+    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", netflix: false };
     data.tasks.push(t); persistTask(t); renderTracker();
   }
   async function clearAll() {
@@ -512,7 +524,7 @@
     renderBrand(); renderTracker(); toast("Tracker vaciado — agregá tareas con “+ Tarea”");
   }
   function addScenario() {
-    const s = { id: uid("sc"), name: "Nuevo escenario", note: "", thumbUrl: "", conceptStatus: "brief", conceptAssignee: "", modelStatus: "brief", modelAssignee: "", target: "" };
+    const s = { id: uid("sc"), name: "Nuevo escenario", note: "", thumbUrl: "", conceptStatus: "brief", conceptAssignee: "", modelStatus: "brief", modelAssignee: "", netflix: false };
     data.scenarios.push(s); persistScenario(s); renderTracker();
   }
 
