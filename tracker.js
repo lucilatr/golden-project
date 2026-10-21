@@ -41,6 +41,9 @@
   ];
   const st = (id) => STATUS.find((s) => s.id === id) || STATUS[0];
 
+  // "Apunta a": a qué objetivo sirve la tarea (valores fijos)
+  const TARGETS = ["", "Entrega Netflix", "Avance juego"];
+
   /* ---------------- Estado ---------------- */
   let data = { tasks: [], scenarios: [], meta: {} };
   const ui = {
@@ -347,10 +350,11 @@
     return assigneeCell(obj, field, persist);
   }
   function targetCell(obj, persist) {
-    const n = h("span", { class: "target-field" }, obj.target || (ui.editable ? "—" : ""));
-    n.contentEditable = ui.editable ? "true" : "false";
-    if (ui.editable) n.addEventListener("blur", () => { obj.target = n.textContent.trim().replace(/^—$/, ""); persist(); });
-    return n;
+    if (!ui.editable) return h("span", { class: "deliv-tag" }, obj.target || "—");
+    const sel = h("select", { class: "cell-edit" });
+    TARGETS.forEach((t) => { const o = h("option", { value: t }, t || "—"); if ((obj.target || "") === t) o.selected = true; sel.appendChild(o); });
+    sel.addEventListener("change", () => { obj.target = sel.value; persist(); });
+    return sel;
   }
   function titleCell(obj, persist, subField) {
     const wrap = h("td", { class: "asset" });
@@ -380,17 +384,19 @@
       whoSel.addEventListener("change", () => { const mm = member(whoSel.value); if (mm && mm.dept) depSel.value = mm.dept; });
       const stSel = h("select", { title: "Estado" });
       STATUS.forEach((s) => stSel.appendChild(h("option", { value: s.id }, s.label)));
+      const tgtSel = h("select", { title: "Apunta a" });
+      TARGETS.forEach((t) => tgtSel.appendChild(h("option", { value: t }, t || "Apunta a…")));
       const add = () => {
         const title = titleInp.value.trim();
         if (!title) { titleInp.focus(); return; }
-        const t = { id: uid("t"), dept: depSel.value, title, assignee: whoSel.value, status: stSel.value, target: "" };
+        const t = { id: uid("t"), dept: depSel.value, title, assignee: whoSel.value, status: stSel.value, target: tgtSel.value };
         data.tasks.push(t); persistTask(t);
         const d = (DEPTS.find((x) => x.id === depSel.value) || {}).label || "";
         toast("Tarea agregada en " + d); renderTracker();
       };
       const btn = h("button", { class: "btn-hub accent", onclick: add }, "Agregar");
       titleInp.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
-      qa.appendChild(titleInp); qa.appendChild(depSel); qa.appendChild(whoSel); qa.appendChild(stSel); qa.appendChild(btn);
+      qa.appendChild(titleInp); qa.appendChild(depSel); qa.appendChild(whoSel); qa.appendChild(stSel); qa.appendChild(tgtSel); qa.appendChild(btn);
       host.appendChild(qa);
     }
 
