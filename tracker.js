@@ -12,22 +12,23 @@
 
   /* ---------------- Catálogos ---------------- */
   const TEAM = [
-    { id: "fh", name: "Federico Heller",  initials: "FH", color: "#4bb3c4", role: "Director" },
-    { id: "st", name: "Santiago Tereso",  initials: "ST", color: "#d9a441", role: "Producción" },
-    { id: "lt", name: "Lucila Trobbiani", initials: "LT", color: "#d9a441", role: "Producción" },
-    { id: "pa", name: "Pablo Altamiranda",initials: "PA", color: "#b5479b", role: "Lead Dev · Gameplay / integración" },
-    { id: "lm", name: "Lucas Mallo",      initials: "LM", color: "#b5479b", role: "Dev · Gameplay / UI" },
-    { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D" },
-    { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist" },
-    { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist" },
+    { id: "fh", name: "Federico Heller",  initials: "FH", color: "#4bb3c4", role: "Director", dept: "" },
+    { id: "st", name: "Santiago Tereso",  initials: "ST", color: "#d9a441", role: "Producción", dept: "narrativa" },
+    { id: "lt", name: "Lucila Trobbiani", initials: "LT", color: "#d9a441", role: "Producción", dept: "narrativa" },
+    { id: "pa", name: "Pablo Altamiranda",initials: "PA", color: "#b5479b", role: "Lead Dev · Gameplay / integración", dept: "gameplay" },
+    { id: "lm", name: "Lucas Mallo",      initials: "LM", color: "#b5479b", role: "Dev · Gameplay / UI", dept: "gameplay" },
+    { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D", dept: "arte" },
+    { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "arte" },
+    { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "arte" },
   ];
   const member = (id) => TEAM.find((m) => m.id === id) || null;
 
   const DEPTS = [
+    { id: "arte",      ico: "🎨", label: "Arte" },
     { id: "narrativa", ico: "🎬", label: "Narrativa / Guion" },
     { id: "gameplay",  ico: "🎮", label: "Gameplay / Charting" },
-    { id: "audio",     ico: "🎵", label: "Audio" },
     { id: "ui",        ico: "📺", label: "UI de TV + Control" },
+    { id: "audio",     ico: "🎵", label: "Audio" },
     { id: "qa",        ico: "✅", label: "QA / Entrega Netflix" },
   ];
 
@@ -375,6 +376,8 @@
       const whoSel = h("select", { title: "Responsable" });
       whoSel.appendChild(h("option", { value: "" }, "Responsable…"));
       TEAM.forEach((m) => whoSel.appendChild(h("option", { value: m.id }, m.name)));
+      // al elegir persona, el departamento se autocompleta (igual se puede cambiar)
+      whoSel.addEventListener("change", () => { const mm = member(whoSel.value); if (mm && mm.dept) depSel.value = mm.dept; });
       const stSel = h("select", { title: "Estado" });
       STATUS.forEach((s) => stSel.appendChild(h("option", { value: s.id }, s.label)));
       const add = () => {
@@ -398,7 +401,7 @@
     selP.addEventListener("change", () => { ui.filterPerson = selP.value; renderTracker(); });
     tb.appendChild(selP);
     const selD = h("select"); selD.appendChild(h("option", { value: "" }, "Departamento: Todos"));
-    [{ id: "escenarios", label: "Arte / Escenarios" }].concat(DEPTS).forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
+    [{ id: "escenarios", label: "Escenarios" }].concat(DEPTS).forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
     selD.addEventListener("change", () => { ui.filterDept = selD.value; renderTracker(); });
     tb.appendChild(selD);
     if (ui.editable) tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas y escenarios" }, "🗑 Vaciar"));
@@ -415,8 +418,8 @@
       const scs = data.scenarios.filter((s) => matchP([s.conceptAssignee, s.modelAssignee]));
       const sec = h("div", { class: "dept" });
       const head = h("div", { class: "dept-head" }, [
-        h("span", { class: "ico" }, "🎨"), h("h3", {}, "Arte / Escenarios"),
-        h("span", { class: "count" }, scs.length + " escenarios"), h("span", { class: "pline" }),
+        h("span", { class: "ico" }, "🎨"), h("h3", {}, "Escenarios"),
+        h("span", { class: "count" }, scs.length + " · Concept → 3D"), h("span", { class: "pline" }),
       ]);
       if (ui.editable) head.appendChild(h("button", { class: "btn-hub edit-only", onclick: addScenario }, "+ Escenario"));
       sec.appendChild(head);
