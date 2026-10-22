@@ -145,6 +145,22 @@ body:not(.hub-ro) .asset-thumb .thumb:hover{border-color:var(--accent)}
 .asset-thumb .thumb.uploading{opacity:.5}
 .stage-cell{display:flex;align-items:center;gap:8px}
 
+/* filas de tabla arrastrables */
+.hub-view tbody tr.dragging{opacity:.4}
+.hub-view td .drag-handle{cursor:grab}
+
+/* ---- Calendario: cuadrantes por semana ---- */
+.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.wk-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.wk-card.wk-key{background:linear-gradient(160deg,rgba(217,164,65,.12),var(--bg-2) 70%);border-color:#5c4a2a}
+.wk-range{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-2);text-transform:uppercase}
+.wk-card.wk-key .wk-range{color:var(--accent-2)}
+.wk-ms{font-size:11.5px;line-height:1.35;background:rgba(217,164,65,.14);border-radius:6px;padding:5px 8px;color:var(--accent-2)}
+.wk-ms b{color:var(--accent-2)}
+.wk-ms span{color:var(--text-2)}
+.wk-obj{font-size:13px;color:var(--text);white-space:pre-wrap;flex:1;min-height:34px}
+.wk-obj:empty::before{content:"";}
+
 /* ---- Calendario / embeds ---- */
 .embed-box{border:1px dashed var(--line-2);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text-dim);background:var(--bg-2)}
 .embed-box .ico{font-size:40px;margin-bottom:10px}

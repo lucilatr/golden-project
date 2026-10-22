@@ -17,19 +17,35 @@
     { id: "lt", name: "Lucila Trobbiani", initials: "LT", color: "#d9a441", role: "Producción", dept: "narrativa" },
     { id: "pa", name: "Pablo Altamiranda",initials: "PA", color: "#b5479b", role: "Lead Dev · Gameplay / integración", dept: "gameplay" },
     { id: "lm", name: "Lucas Mallo",      initials: "LM", color: "#b5479b", role: "Dev · Gameplay / UI", dept: "gameplay" },
-    { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D", dept: "arte" },
-    { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "arte" },
-    { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "arte" },
+    { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D", dept: "concept" },
+    { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
+    { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
   ];
   const member = (id) => TEAM.find((m) => m.id === id) || null;
 
   const DEPTS = [
-    { id: "arte",      ico: "🎨", label: "Arte" },
+    { id: "concept",   ico: "🎨", label: "Concept" },
+    { id: "3d",        ico: "🧊", label: "3D" },
+    { id: "animacion", ico: "🎞️", label: "Animación" },
     { id: "narrativa", ico: "🎬", label: "Narrativa / Guion" },
     { id: "gameplay",  ico: "🎮", label: "Gameplay / Charting" },
     { id: "ui",        ico: "📺", label: "UI de TV + Control" },
     { id: "audio",     ico: "🎵", label: "Audio" },
     { id: "qa",        ico: "✅", label: "QA / Entrega Netflix" },
+  ];
+
+  // Escenas del Script (se cargan de la tabla segments)
+  let scenes = [];
+
+  // Milestones de Netflix (del calendario de Santiago)
+  const CAL_URL = "https://santiagotereso.github.io/rhythm-mode-schedule/";
+  const MILESTONES = [
+    { date: "2026-10-02", label: "M1 delivery", desc: "Entregables de pre-producción" },
+    { date: "2026-10-09", label: "M1 aceptado", desc: "Arranca la fase de build" },
+    { date: "2026-11-05", label: "Milestone 1", desc: "Build intermedio + deep dive con Netflix" },
+    { date: "2026-12-03", label: "Milestone 2", desc: "Segundo build intermedio. Deep dive" },
+    { date: "2026-12-11", label: "Entrega final", desc: "Build + source + assets + docs" },
+    { date: "2027-01-02", label: "Deadline contrato", desc: "3 meses desde M1" },
   ];
 
   const STATUS = [
@@ -124,6 +140,12 @@
     },
     del(id) { this.sb.from("tracker_items").delete().eq("id", id).then(() => {}, () => {}); },
     async clearItems() { await this.sb.from("tracker_items").delete().eq("doc_id", DOC).neq("kind", "meta"); },
+    async loadScenes() {
+      try {
+        const { data: rows } = await this.sb.from("segments").select("id,data,pos").eq("doc_id", DOC).order("pos", { ascending: true });
+        return (rows || []).map((r) => ({ id: r.id, label: ((r.data.startTime || "") + "–" + (r.data.endTime || "") + (r.data.musicalCue ? " " + r.data.musicalCue : "")).trim() }));
+      } catch (e) { return []; }
+    },
     subscribe() {
       this.sb.channel("rt-tracker")
         .on("postgres_changes", { event: "*", schema: "public", table: "tracker_items", filter: "doc_id=eq." + DOC }, () => this.refresh())
@@ -286,7 +308,7 @@
 
     // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
     const nf = h("div", { class: "block", style: "margin-bottom:18px" });
-    nf.appendChild(h("h3", { html: '🎯 Apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Netflix' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
+    nf.appendChild(h("h3", { html: '🎯 Tareas que apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Netflix' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
     const nfList = [];
     data.tasks.forEach((t) => { if (t.netflix) nfList.push(t); });
     data.scenarios.forEach((s) => { if (s.netflix) nfList.push(s); });
@@ -323,15 +345,13 @@
     });
     host.appendChild(nf);
 
+    const grid = h("div", { class: "two-col" });
+
     // En qué está cada uno ahora (En progreso), SIN las de Netflix (ya están arriba)
     const ob = h("div", { class: "block" });
-    ob.appendChild(h("h3", { html: '🔄 En qué está cada uno ahora <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· se levanta del Tracker</small>' }));
+    ob.appendChild(h("h3", {}, "🔄 En qué está cada uno ahora"));
     const ongoing = [];
     data.tasks.filter((t) => t.status === "dev" && !t.netflix).forEach((t) => ongoing.push({ who: t.assignee, what: t.title }));
-    data.scenarios.filter((s) => !s.netflix).forEach((s) => {
-      if (s.conceptStatus === "dev") ongoing.push({ who: s.conceptAssignee, what: "Concept de " + s.name });
-      if (s.modelStatus === "dev") ongoing.push({ who: s.modelAssignee, what: "3D de " + s.name });
-    });
     if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso” (sin contar las de Netflix)."));
     ongoing.forEach((o) => {
       const mm = member(o.who);
@@ -341,7 +361,23 @@
         h("span", { class: "chip c-dev" }, "EN PROGRESO"),
       ]));
     });
-    host.appendChild(ob);
+    grid.appendChild(ob);
+
+    // Para Dirección: tareas en Brief y Review (para hacer briefs y dar reviews)
+    const rv = h("div", { class: "block" });
+    rv.appendChild(h("h3", { html: '📋 Para revisar / aprobar <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· briefs y reviews (Dirección)</small>' }));
+    const toReview = data.tasks.filter((t) => t.status === "brief" || t.status === "review");
+    if (!toReview.length) rv.appendChild(h("div", { class: "mini-empty" }, "Nada pendiente de brief o review."));
+    toReview.forEach((t) => {
+      const mm = member(t.assignee); const sdef = st(t.status);
+      rv.appendChild(h("div", { class: "mini-row" }, [
+        h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
+        h("div", { class: "txt" }, [document.createTextNode(t.title), h("small", {}, mm ? mm.name : "Sin asignar")]),
+        h("span", { class: "chip " + sdef.cls }, sdef.label.toUpperCase()),
+      ]));
+    });
+    grid.appendChild(rv);
+    host.appendChild(grid);
   }
 
   /* ============================================================
@@ -374,16 +410,31 @@
   function netflixCell(obj, persist) {
     if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "NETFLIX") : h("span", { class: "deliv-tag" }, "—");
     const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.netflix;
-    cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); if (ui.view === "resumen") {} });
+    cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); });
     return h("label", { class: "nf-check", title: "Apunta a la próxima entrega de Netflix" }, [cb]);
   }
-  function titleCell(obj, persist, subField) {
+  // Tilde "Semana": marca que la tarea es objetivo de esta semana
+  function weekCell(obj, persist) {
+    if (!ui.editable) return obj.week ? h("span", { class: "chip c-dev" }, "SEMANA") : h("span", { class: "deliv-tag" }, "—");
+    const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.week;
+    cb.addEventListener("change", () => { obj.week = cb.checked; persist(); });
+    return h("label", { class: "nf-check", title: "Objetivo de la semana" }, [cb]);
+  }
+  // Escena del Script a la que pertenece
+  function sceneCell(obj, persist) {
+    if (!ui.editable) { const sc = scenes.find((x) => x.id === obj.scene); return h("span", { class: "deliv-tag" }, sc ? sc.label : "—"); }
+    const sel = h("select", { class: "cell-edit" });
+    sel.appendChild(h("option", { value: "" }, "— escena"));
+    scenes.forEach((sc) => { const o = h("option", { value: sc.id }, sc.label); if (obj.scene === sc.id) o.selected = true; sel.appendChild(o); });
+    sel.addEventListener("change", () => { obj.scene = sel.value; persist(); });
+    return sel;
+  }
+  function titleCell(obj, persist) {
     const wrap = h("td", { class: "asset" });
     const title = h("div", { class: "title" }, obj.title != null ? obj.title : obj.name);
     title.contentEditable = ui.editable ? "true" : "false";
     if (ui.editable) title.addEventListener("blur", () => { const v = title.textContent.trim(); if ("title" in obj) obj.title = v; else obj.name = v; persist(); });
     wrap.appendChild(title);
-    if (obj[subField]) wrap.appendChild(h("small", {}, obj[subField]));
     return wrap;
   }
 
@@ -426,10 +477,10 @@
     selP.addEventListener("change", () => { ui.filterPerson = selP.value; renderTracker(); });
     tb.appendChild(selP);
     const selD = h("select"); selD.appendChild(h("option", { value: "" }, "Departamento: Todos"));
-    [{ id: "escenarios", label: "Escenarios" }].concat(DEPTS).forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
+    DEPTS.forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
     selD.addEventListener("change", () => { ui.filterDept = selD.value; renderTracker(); });
     tb.appendChild(selD);
-    if (ui.editable) tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas y escenarios" }, "🗑 Vaciar"));
+    if (ui.editable) tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas" }, "🗑 Vaciar"));
     tb.appendChild(h("span", { class: "spacer" }));
     const legend = h("div", { class: "legend" });
     STATUS.forEach((s) => legend.appendChild(h("span", { class: "chip " + s.cls }, s.label.toUpperCase())));
@@ -438,60 +489,11 @@
 
     const matchP = (ids) => !ui.filterPerson || ids.indexOf(ui.filterPerson) >= 0;
 
-    // Escenarios (pipeline Concept → 3D)
-    if (!ui.filterDept || ui.filterDept === "escenarios") {
-      const scs = data.scenarios.filter((s) => matchP([s.conceptAssignee, s.modelAssignee]));
-      const sec = h("div", { class: "dept" });
-      const head = h("div", { class: "dept-head", onclick: (e) => { if (!e.target.closest("button")) toggleCollapse("escenarios"); } }, [
-        h("span", { class: "caret" }, collapsed["escenarios"] ? "▸" : "▾"),
-        h("span", { class: "ico" }, "🎨"), h("h3", {}, "Escenarios"),
-        h("span", { class: "count" }, scs.length + " · Concept → 3D"), h("span", { class: "pline" }),
-      ]);
-      if (ui.editable) head.appendChild(h("button", { class: "btn-hub edit-only", onclick: addScenario }, "+ Escenario"));
-      sec.appendChild(head);
-      const tbl = h("table");
-      tbl.appendChild(h("thead", {}, h("tr", {}, [
-        h("th", { style: "width:30%" }, "Escenario"),
-        h("th", { class: "center" }, "① Concept"), h("th", { class: "center" }, "② 3D"),
-        h("th", { class: "center" }, "Netflix"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
-      ])));
-      const body = h("tbody");
-      scs.forEach((s) => {
-        const tr = h("tr");
-        // thumbnail + nombre
-        const td0 = h("td", { class: "asset" });
-        const at = h("div", { class: "asset-thumb" });
-        let thumb;
-        if (s.thumbUrl) thumb = h("img", { class: "thumb", src: s.thumbUrl, alt: "" });
-        else thumb = h("div", { class: "thumb empty" }, "＋");
-        attachDrop(at, thumb, s);
-        at.appendChild(thumb);
-        const nameWrap = h("div", {});
-        const name = h("div", { class: "title" }, s.name); name.contentEditable = ui.editable ? "true" : "false";
-        if (ui.editable) name.addEventListener("blur", () => { s.name = name.textContent.trim(); persistScenario(s); });
-        nameWrap.appendChild(name);
-        if (s.note || ui.editable) {
-          const note = h("small", {}, s.note || "—"); note.contentEditable = ui.editable ? "true" : "false";
-          if (ui.editable) note.addEventListener("blur", () => { s.note = note.textContent.trim().replace(/^—$/, ""); persistScenario(s); });
-          nameWrap.appendChild(note);
-        }
-        at.appendChild(nameWrap); td0.appendChild(at); tr.appendChild(td0);
-        // concept
-        tr.appendChild(h("td", {}, h("div", { class: "stage-cell" }, [statusCell(s, "conceptStatus", () => persistScenario(s)), miniAssignee(s, "conceptAssignee", () => persistScenario(s))])));
-        // 3d
-        tr.appendChild(h("td", {}, h("div", { class: "stage-cell" }, [statusCell(s, "modelStatus", () => persistScenario(s)), miniAssignee(s, "modelAssignee", () => persistScenario(s))])));
-        // netflix
-        tr.appendChild(h("td", { class: "center" }, netflixCell(s, () => persistScenario(s))));
-        if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar “" + s.name + "”?")) { persistDeleteScenario(s); renderTracker(); } } }, "×")));
-        body.appendChild(tr);
-      });
-      tbl.appendChild(body); if (collapsed["escenarios"]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
-    }
-
-    // Departamentos de tareas
     DEPTS.forEach((d) => {
       if (ui.filterDept && ui.filterDept !== d.id) return;
-      const tasks = data.tasks.filter((t) => t.dept === d.id && matchP([t.assignee]));
+      const is3d = d.id === "3d";
+      const tasks = data.tasks.filter((t) => t.dept === d.id && matchP([t.assignee]))
+        .sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
       if (ui.filterPerson && !tasks.length) return;
       const sec = h("div", { class: "dept" });
       const head = h("div", { class: "dept-head", onclick: (e) => { if (!e.target.closest("button")) toggleCollapse(d.id); } }, [
@@ -501,60 +503,93 @@
       ]);
       if (ui.editable) head.appendChild(h("button", { class: "btn-hub edit-only", onclick: () => addTask(d.id) }, "+ Tarea"));
       sec.appendChild(head);
+
       const tbl = h("table");
-      tbl.appendChild(h("thead", {}, h("tr", {}, [
-        h("th", { style: "width:40%" }, "Tarea"), h("th", {}, "Responsable"),
-        h("th", {}, "Estado"), h("th", { class: "center" }, "Netflix"), ui.editable ? h("th", { style: "width:34px" }, "") : null,
-      ])));
+      const hc = [];
+      if (ui.editable) hc.push(h("th", { style: "width:22px" }, ""));
+      if (is3d) hc.push(h("th", { style: "width:74px" }, ""));
+      hc.push(h("th", { style: "width:28%" }, "Tarea"));
+      hc.push(h("th", {}, "Escena"));
+      hc.push(h("th", {}, "Responsable"));
+      hc.push(h("th", {}, "Estado"));
+      hc.push(h("th", { class: "center" }, "Netflix"));
+      hc.push(h("th", { class: "center" }, "Semana"));
+      if (ui.editable) hc.push(h("th", { style: "width:34px" }, ""));
+      tbl.appendChild(h("thead", {}, h("tr", {}, hc)));
+
       const body = h("tbody");
+      let dragId = null;
       tasks.forEach((t) => {
         const tr = h("tr");
-        tr.appendChild(titleCell(t, () => persistTask(t), "_none"));
+        if (ui.editable) {
+          tr.appendChild(h("td", {}, h("span", { class: "drag-handle", title: "Arrastrá para reordenar por prioridad" }, "⠿")));
+          tr.setAttribute("draggable", "true");
+          tr.addEventListener("dragstart", (e) => { dragId = t.id; tr.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+          tr.addEventListener("dragend", () => tr.classList.remove("dragging"));
+          tr.addEventListener("dragover", (e) => { e.preventDefault(); });
+          tr.addEventListener("drop", (e) => { e.preventDefault(); if (dragId == null || dragId === t.id) return; reorderTask(d.id, dragId, t.id); dragId = null; renderTracker(); });
+        }
+        if (is3d) {
+          const td0 = h("td", {});
+          const at = h("div", { class: "asset-thumb" });
+          const thumb = t.thumbUrl ? h("img", { class: "thumb", src: t.thumbUrl, alt: "" }) : h("div", { class: "thumb empty" }, "＋");
+          attachDrop(at, thumb, t, () => persistTask(t));
+          at.appendChild(thumb); td0.appendChild(at); tr.appendChild(td0);
+        }
+        tr.appendChild(titleCell(t, () => persistTask(t)));
+        tr.appendChild(h("td", {}, sceneCell(t, () => persistTask(t))));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
         tr.appendChild(h("td", { class: "center" }, netflixCell(t, () => persistTask(t))));
+        tr.appendChild(h("td", { class: "center" }, weekCell(t, () => persistTask(t))));
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
-      if (!tasks.length) body.appendChild(h("tr", {}, h("td", { colspan: ui.editable ? 5 : 4 }, h("span", { class: "mini-empty" }, "Sin tareas todavía."))));
+      if (!tasks.length) { const cols = 6 + (ui.editable ? 2 : 0) + (is3d ? 1 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
       tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
 
+  function nextPri(dept) {
+    const ps = data.tasks.filter((t) => t.dept === dept && t.pri != null).map((t) => t.pri);
+    return ps.length ? Math.max.apply(null, ps) + 1 : 0;
+  }
+  function reorderTask(dept, fromId, toId) {
+    const list = data.tasks.filter((t) => t.dept === dept).sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
+    const from = list.findIndex((t) => t.id === fromId), to = list.findIndex((t) => t.id === toId);
+    if (from < 0 || to < 0) return;
+    const moved = list.splice(from, 1)[0]; list.splice(to, 0, moved);
+    list.forEach((t, i) => { t.pri = i; persistTask(t); });
+  }
   function addTask(dept) {
-    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", netflix: false };
+    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", netflix: false, week: false, scene: "", thumbUrl: "", pri: nextPri(dept) };
     data.tasks.push(t); persistTask(t); renderTracker();
   }
   async function clearAll() {
-    if (!confirm("¿Vaciar TODO el Tracker (tareas y escenarios)?\nEsto no se puede deshacer. Los objetivos del Resumen se mantienen.")) return;
+    if (!confirm("¿Vaciar TODO el Tracker (todas las tareas)?\nEsto no se puede deshacer. Los objetivos del Resumen se mantienen.")) return;
     data.tasks = []; data.scenarios = [];
     if (Sync.enabled) { try { await Sync.clearItems(); } catch (e) { toast("No se pudo vaciar"); return; } } else saveLocal();
     renderBrand(); renderTracker(); toast("Tracker vaciado — agregá tareas con “+ Tarea”");
   }
-  function addScenario() {
-    const s = { id: uid("sc"), name: "Nuevo escenario", note: "", thumbUrl: "", conceptStatus: "brief", conceptAssignee: "", modelStatus: "brief", modelAssignee: "", netflix: false };
-    data.scenarios.push(s); persistScenario(s); renderTracker();
-  }
 
   /* ---------------- Drag & drop de miniatura ---------------- */
-  function attachDrop(container, thumbEl, s) {
+  function attachDrop(container, thumbEl, obj, persist) {
     container.addEventListener("dragover", (e) => { e.preventDefault(); if (ui.editable) thumbEl.classList.add("drop-hover"); });
     container.addEventListener("dragleave", () => thumbEl.classList.remove("drop-hover"));
     container.addEventListener("drop", async (e) => {
-      e.preventDefault(); thumbEl.classList.remove("drop-hover");
+      e.preventDefault(); e.stopPropagation(); thumbEl.classList.remove("drop-hover");
       if (!ui.editable) { toast("Desbloqueá edición (🔒 Editar) para cambiar la imagen."); return; }
       const f = e.dataTransfer.files && e.dataTransfer.files[0];
       if (!f) return;
       if (!/^image\//.test(f.type)) { toast("Arrastrá un archivo de imagen."); return; }
       const localUrl = URL.createObjectURL(f);
-      // preview inmediato
       let img = thumbEl;
       if (img.tagName !== "IMG") { img = h("img", { class: "thumb", alt: "" }); thumbEl.replaceWith(img); }
       img.src = localUrl; img.classList.add("uploading");
-      if (!Sync.enabled) { s.thumbUrl = localUrl; img.classList.remove("uploading"); saveLocal(); toast("Sin Supabase: la imagen no se guarda compartida."); return; }
+      if (!Sync.enabled) { obj.thumbUrl = localUrl; img.classList.remove("uploading"); saveLocal(); toast("Sin Supabase: la imagen no se guarda compartida."); return; }
       try {
-        const url = await Sync.uploadThumb(f, s.id);
-        s.thumbUrl = url; img.src = url; img.classList.remove("uploading"); persistScenario(s);
+        const url = await Sync.uploadThumb(f, obj.id);
+        obj.thumbUrl = url; img.src = url; img.classList.remove("uploading"); persist();
         toast("Imagen guardada");
       } catch (err) {
         img.classList.remove("uploading");
@@ -566,35 +601,65 @@
   /* ============================================================
      CALENDARIO
      ============================================================ */
+  const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function parseLocal(s) { const p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function mondayOf(d) { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setDate(x.getDate() - day); x.setHours(0, 0, 0, 0); return x; }
+  function fmtRange(a, b) {
+    if (a.getMonth() === b.getMonth()) return a.getDate() + "–" + b.getDate() + " " + MES[b.getMonth()];
+    return a.getDate() + " " + MES[a.getMonth()] + "–" + b.getDate() + " " + MES[b.getMonth()];
+  }
+  function buildWeeks() {
+    const start = mondayOf(parseLocal("2026-09-28")), end = parseLocal("2027-01-05");
+    const weeks = [];
+    for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) {
+      const mon = new Date(d), sun = new Date(d); sun.setDate(sun.getDate() + 6);
+      const ms = MILESTONES.filter((m) => { const md = parseLocal(m.date); return md >= mon && md <= sun; });
+      weeks.push({ key: ymd(mon), mon: mon, sun: sun, ms: ms });
+    }
+    return weeks;
+  }
   function renderCal() {
     const host = el("view-cal"); if (!host) return; host.innerHTML = ""; host.classList.add("pad");
-    const url = data.meta.calendarUrl;
-    if (url) {
-      const bar = h("div", { class: "hub-toolbar" });
-      bar.appendChild(h("h2", { class: "sec", style: "margin:0" }, "Calendario / Entregas"));
-      bar.appendChild(h("span", { class: "spacer" }));
-      if (ui.editable) bar.appendChild(h("button", { class: "btn-hub edit-only", onclick: () => { data.meta.calendarUrl = ""; persistMeta(); renderCal(); } }, "Cambiar link"));
-      host.appendChild(bar);
-      host.appendChild(h("iframe", { class: "cal-frame", src: url, title: "Calendario" }));
-      return;
-    }
-    const box = h("div", { class: "embed-box" });
-    box.appendChild(h("div", { class: "ico" }, "▤"));
-    box.appendChild(h("b", {}, "Calendario de entregas"));
-    box.appendChild(h("div", { class: "note" }, ui.editable
-      ? "Pegá abajo el link de inserción (iframe src) de tu Google Calendar o Notion y dale Enter."
-      : "Todavía no hay un calendario cargado. Producción puede agregarlo desde el modo edición."));
-    if (ui.editable) {
-      const inp = h("input", { class: "edit-only", type: "text", placeholder: "https://calendar.google.com/calendar/embed?src=..." });
-      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { const v = inp.value.trim(); if (v) { data.meta.calendarUrl = v; persistMeta(); renderCal(); } } });
-      box.appendChild(inp);
-    }
-    host.appendChild(box);
+    const bar = h("div", { class: "hub-toolbar" });
+    bar.appendChild(h("h2", { class: "sec", style: "margin:0" }, "Calendario · objetivos por semana"));
+    bar.appendChild(h("span", { class: "spacer" }));
+    bar.appendChild(h("a", { class: "btn-hub", href: CAL_URL, target: "_blank", rel: "noopener" }, "Calendario de Santiago ↗"));
+    host.appendChild(bar);
+    host.appendChild(h("div", { class: "note", style: "color:var(--text-dim);font-size:12px;margin:-6px 0 16px" },
+      ui.editable ? "Escribí el objetivo de cada semana. Las semanas con milestone de Netflix están resaltadas en dorado." : "Objetivos por semana. Las semanas resaltadas tienen un milestone de Netflix."));
+
+    data.meta.weekPlans = data.meta.weekPlans || {};
+    const plans = data.meta.weekPlans;
+    const grid = h("div", { class: "wk-grid" });
+    buildWeeks().forEach((w) => {
+      const card = h("div", { class: "wk-card" + (w.ms.length ? " wk-key" : "") });
+      card.appendChild(h("div", { class: "wk-range" }, fmtRange(w.mon, w.sun)));
+      w.ms.forEach((m) => card.appendChild(h("div", { class: "wk-ms" }, [
+        h("b", {}, "⚑ " + m.label), h("span", {}, " · " + m.desc + " · " + parseLocal(m.date).getDate() + " " + MES[parseLocal(m.date).getMonth()]),
+      ])));
+      const field = editField(plans[w.key] || "", (v) => { plans[w.key] = v; persistMeta(); }, "wk-obj", true);
+      if (!ui.editable && !plans[w.key]) field.textContent = "—";
+      card.appendChild(field);
+      grid.appendChild(card);
+    });
+    host.appendChild(grid);
   }
 
   /* ============================================================
      BOOT
      ============================================================ */
+  // Migración: arte→concept y escenarios (pipeline) → tareas del depto 3D
+  function migrate() {
+    data.tasks.forEach((t) => { if (t.dept === "arte") { t.dept = "concept"; persistTask(t); } });
+    (data.scenarios || []).forEach((s) => {
+      const t = { id: s.id, dept: "3d", title: s.name || "Escenario", assignee: s.modelAssignee || s.conceptAssignee || "", status: s.modelStatus || "brief", netflix: !!s.netflix, week: false, scene: "", thumbUrl: s.thumbUrl || "", pri: nextPri("3d") };
+      data.tasks.push(t);
+      if (Sync.enabled) Sync.push("task", t.id, t, t.pri); else saveLocal();
+    });
+    data.scenarios = [];
+  }
+
   async function boot() {
     applyMode();
     if (Sync.init()) {
@@ -602,12 +667,14 @@
         const { rows, parsed } = await Sync.loadAll();
         if (!rows.length) { const sd = seed(); await Sync.seed(sd); data = sd; }
         else { data = parsed; if (!data.meta || !Object.keys(data.meta).length) data.meta = seed().meta; }
+        migrate();
+        scenes = await Sync.loadScenes();
         Sync.subscribe();
       } catch (e) {
-        Sync.enabled = false; loadLocal();
+        Sync.enabled = false; loadLocal(); migrate();
         toast("Tracker en modo local (¿falta correr supabase-setup.sql?)");
       }
-    } else { loadLocal(); }
+    } else { loadLocal(); migrate(); }
     renderBrand(); renderTabs(); show("resumen");
   }
   function loadLocal() {
