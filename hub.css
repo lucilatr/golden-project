@@ -110,6 +110,13 @@ body:not(.hub-ro) .editable-field:focus{background:var(--bg-3);box-shadow:inset 
 .dept-head .btn-hub{padding:4px 10px;font-size:12px}
 
 .hub-view table{width:100%;border-collapse:collapse;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+/* columnas alineadas entre todos los departamentos del Tracker */
+#view-tracker table{table-layout:fixed;min-width:880px}
+#view-tracker.pad{overflow-x:auto}
+#view-tracker td,#view-tracker th{overflow:hidden}
+#view-tracker td.asset .title{min-width:0;overflow-wrap:anywhere}
+#view-tracker .asset-thumb{min-width:0}
+#view-tracker .asset-thumb .title{flex:1;min-width:0;overflow-wrap:anywhere}
 .hub-view thead th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);font-weight:700;padding:9px 14px;background:var(--bg-3);border-bottom:1px solid var(--line)}
 .hub-view thead th.center{text-align:center}
 .hub-view td.center{text-align:center}

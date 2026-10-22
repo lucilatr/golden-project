@@ -429,12 +429,19 @@
     sel.addEventListener("change", () => { obj.scene = sel.value; persist(); });
     return sel;
   }
-  function titleCell(obj, persist) {
+  function titleCell(obj, persist, withThumb) {
     const wrap = h("td", { class: "asset" });
     const title = h("div", { class: "title" }, obj.title != null ? obj.title : obj.name);
     title.contentEditable = ui.editable ? "true" : "false";
     if (ui.editable) title.addEventListener("blur", () => { const v = title.textContent.trim(); if ("title" in obj) obj.title = v; else obj.name = v; persist(); });
-    wrap.appendChild(title);
+    if (withThumb) {
+      const at = h("div", { class: "asset-thumb" });
+      const thumb = obj.thumbUrl ? h("img", { class: "thumb", src: obj.thumbUrl, alt: "" }) : h("div", { class: "thumb empty" }, "＋");
+      attachDrop(at, thumb, obj, persist);
+      at.appendChild(thumb); at.appendChild(title); wrap.appendChild(at);
+    } else {
+      wrap.appendChild(title);
+    }
     return wrap;
   }
 
@@ -506,15 +513,14 @@
 
       const tbl = h("table");
       const hc = [];
-      if (ui.editable) hc.push(h("th", { style: "width:22px" }, ""));
-      if (is3d) hc.push(h("th", { style: "width:74px" }, ""));
-      hc.push(h("th", { style: "width:28%" }, "Tarea"));
-      hc.push(h("th", {}, "Escena"));
-      hc.push(h("th", {}, "Responsable"));
-      hc.push(h("th", {}, "Estado"));
-      hc.push(h("th", { class: "center" }, "Netflix"));
-      hc.push(h("th", { class: "center" }, "Semana"));
-      if (ui.editable) hc.push(h("th", { style: "width:34px" }, ""));
+      if (ui.editable) hc.push(h("th", { style: "width:26px" }, ""));
+      hc.push(h("th", {}, "Tarea"));
+      hc.push(h("th", { style: "width:180px" }, "Escena"));
+      hc.push(h("th", { style: "width:160px" }, "Responsable"));
+      hc.push(h("th", { style: "width:120px" }, "Estado"));
+      hc.push(h("th", { class: "center", style: "width:76px" }, "Netflix"));
+      hc.push(h("th", { class: "center", style: "width:76px" }, "Semana"));
+      if (ui.editable) hc.push(h("th", { style: "width:36px" }, ""));
       tbl.appendChild(h("thead", {}, h("tr", {}, hc)));
 
       const body = h("tbody");
@@ -529,14 +535,7 @@
           tr.addEventListener("dragover", (e) => { e.preventDefault(); });
           tr.addEventListener("drop", (e) => { e.preventDefault(); if (dragId == null || dragId === t.id) return; reorderTask(d.id, dragId, t.id); dragId = null; renderTracker(); });
         }
-        if (is3d) {
-          const td0 = h("td", {});
-          const at = h("div", { class: "asset-thumb" });
-          const thumb = t.thumbUrl ? h("img", { class: "thumb", src: t.thumbUrl, alt: "" }) : h("div", { class: "thumb empty" }, "＋");
-          attachDrop(at, thumb, t, () => persistTask(t));
-          at.appendChild(thumb); td0.appendChild(at); tr.appendChild(td0);
-        }
-        tr.appendChild(titleCell(t, () => persistTask(t)));
+        tr.appendChild(titleCell(t, () => persistTask(t), is3d));
         tr.appendChild(h("td", {}, sceneCell(t, () => persistTask(t))));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
@@ -545,7 +544,7 @@
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
-      if (!tasks.length) { const cols = 6 + (ui.editable ? 2 : 0) + (is3d ? 1 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
+      if (!tasks.length) { const cols = 6 + (ui.editable ? 2 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
       tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
