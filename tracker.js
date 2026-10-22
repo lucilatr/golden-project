@@ -630,9 +630,16 @@
 
     data.meta.weekPlans = data.meta.weekPlans || {};
     const plans = data.meta.weekPlans;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const grid = h("div", { class: "wk-grid" });
     buildWeeks().forEach((w) => {
-      const card = h("div", { class: "wk-card" + (w.ms.length ? " wk-key" : "") });
+      const isNow = w.mon <= today && today <= w.sun;
+      const isPast = w.sun < today;
+      let cls = "wk-card";
+      if (w.ms.length) cls += " wk-key";
+      if (isNow) cls += " wk-now";
+      if (isPast) cls += " wk-past";
+      const card = h("div", { class: cls });
       card.appendChild(h("div", { class: "wk-range" }, fmtRange(w.mon, w.sun)));
       w.ms.forEach((m) => card.appendChild(h("div", { class: "wk-ms" }, [
         h("b", {}, "⚑ " + m.label), h("span", {}, " · " + m.desc + " · " + parseLocal(m.date).getDate() + " " + MES[parseLocal(m.date).getMonth()]),

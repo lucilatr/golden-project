@@ -157,11 +157,17 @@ body:not(.hub-ro) .asset-thumb .thumb:hover{border-color:var(--accent)}
 .hub-view td .drag-handle{cursor:grab}
 
 /* ---- Calendario: cuadrantes por semana ---- */
-.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.wk-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+#view-cal.pad{max-width:none}
+.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:820px){.wk-grid{grid-template-columns:repeat(2,1fr)}}
+.wk-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-height:170px}
 .wk-card.wk-key{background:linear-gradient(160deg,rgba(217,164,65,.12),var(--bg-2) 70%);border-color:#5c4a2a}
-.wk-range{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-2);text-transform:uppercase}
+.wk-card.wk-past{opacity:.42}
+.wk-card.wk-past:hover{opacity:.85}
+.wk-card.wk-now{background:linear-gradient(160deg,rgba(63,174,107,.18),var(--bg-2) 72%);border-color:#2f6a48;box-shadow:0 0 0 1px rgba(63,174,107,.25)}
+.wk-range{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:1px;color:var(--text-2);text-transform:uppercase}
 .wk-card.wk-key .wk-range{color:var(--accent-2)}
+.wk-card.wk-now .wk-range{color:#5fd39a}
 .wk-ms{font-size:11.5px;line-height:1.35;background:rgba(217,164,65,.14);border-radius:6px;padding:5px 8px;color:var(--accent-2)}
 .wk-ms b{color:var(--accent-2)}
 .wk-ms span{color:var(--text-2)}
