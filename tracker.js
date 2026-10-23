@@ -20,6 +20,7 @@
     { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D", dept: "concept" },
     { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
     { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
+    { id: "mm", name: "Mauricio Medina",  initials: "MM", color: "#8b5cf6", role: "VFX Artist", dept: "animacion" },
   ];
   const member = (id) => TEAM.find((m) => m.id === id) || null;
 
@@ -27,6 +28,7 @@
     { id: "concept",   ico: "🎨", label: "Concept" },
     { id: "3d",        ico: "🧊", label: "3D" },
     { id: "animacion", ico: "🎞️", label: "Animación" },
+    { id: "vfx",       ico: "✨", label: "VFX" },
     { id: "narrativa", ico: "🎬", label: "Narrativa / Guion" },
     { id: "gameplay",  ico: "🎮", label: "Gameplay / Charting" },
     { id: "ui",        ico: "📺", label: "UI de TV + Control" },
