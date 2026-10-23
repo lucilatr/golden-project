@@ -61,7 +61,7 @@
   let data = { tasks: [], scenarios: [], meta: {} };
   const ui = {
     view: "resumen",
-    editable: sessionStorage.getItem("golden_edit") === "1",
+    editable: localStorage.getItem("golden_edit") === "1",
     filterPerson: "",
     filterDept: "",
   };
@@ -184,12 +184,12 @@
   function editable() { return ui.editable; }
   function applyMode() { document.body.classList.toggle("hub-ro", !ui.editable); }
   async function toggleLock() {
-    if (ui.editable) { ui.editable = false; sessionStorage.removeItem("golden_edit"); applyMode(); renderBrand(); renderCurrent(); return; }
+    if (ui.editable) { ui.editable = false; localStorage.removeItem("golden_edit"); applyMode(); renderBrand(); renderCurrent(); return; }
     const k = prompt("Clave de edición:");
     if (k == null) return;
     const hash = await sha256hex(k);
     if (CFG.editKeyHash && hash !== CFG.editKeyHash) { toast("Clave incorrecta"); return; }
-    ui.editable = true; sessionStorage.setItem("golden_edit", "1"); applyMode(); renderBrand(); renderCurrent();
+    ui.editable = true; localStorage.setItem("golden_edit", "1"); applyMode(); renderBrand(); renderCurrent();
     toast("Edición desbloqueada");
   }
 
