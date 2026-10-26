@@ -448,10 +448,10 @@
   }
   // Tilde "Build": la tarea entra en la próxima build (reemplaza a los tildes Netflix y Semana)
   function buildCell(obj, persist) {
-    if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "BUILD") : h("span", { class: "deliv-tag" }, "—");
+    if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "NEXT BUILD") : h("span", { class: "deliv-tag" }, "—");
     const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.netflix;
     cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); });
-    return h("label", { class: "nf-check", title: "Entra en la próxima build" }, [cb]);
+    return h("label", { class: "nf-check", title: "Entra en el next build" }, [cb]);
   }
   // Deadline: fecha límite de la tarea (campo "due", AAAA-MM-DD)
   const DIA = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
@@ -568,7 +568,7 @@
       hc.push(h("th", { style: "width:160px" }, "Responsable"));
       hc.push(h("th", { style: "width:120px" }, "Estado"));
       hc.push(h("th", { style: "width:130px" }, "Deadline"));
-      hc.push(h("th", { class: "center", style: "width:76px" }, "Build"));
+      hc.push(h("th", { class: "center", style: "width:100px" }, "Next build"));
       if (ui.editable) hc.push(h("th", { style: "width:36px" }, ""));
       tbl.appendChild(h("thead", {}, h("tr", {}, hc)));
 
