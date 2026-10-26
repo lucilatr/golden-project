@@ -21,6 +21,7 @@
     { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
     { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
     { id: "mm", name: "Mauricio Medina",  initials: "MM", color: "#8b5cf6", role: "VFX Artist", dept: "animacion" },
+    { id: "ac", name: "Andrés Chuhy",     initials: "AC", color: "#8b5cf6", role: "Artist", dept: "concept" },
   ];
   const member = (id) => TEAM.find((m) => m.id === id) || null;
 
@@ -145,12 +146,18 @@
     async loadScenes() {
       try {
         const { data: rows } = await this.sb.from("segments").select("id,data,pos").eq("doc_id", DOC).order("pos", { ascending: true });
+        // Nombre corto del espacio físico de cada escena del Script
+        const PLACE = { "scene-008": "Seúl noche", "scene-001": "Seúl día", "scene-002": "Subte", "scene-003": "Cielo",
+          "scene-004": "Cristal", "scene-005": "Formaciones", "scene-006": "Derrumbe",
+          "scene-007": "Oro", "scene-009": "Mega escenario" };
         const STAGE_SHORT = { desire_insecurity: "Deseo", transformation: "Transformación", golden: "Consagración" };
         return (rows || []).map((r) => {
           const range = (r.data.startTime || "") + "–" + (r.data.endTime || "");
           const stage = STAGE_SHORT[r.data.narrativeStage] ? " · " + STAGE_SHORT[r.data.narrativeStage] : "";
           const cue = r.data.musicalCue ? " " + r.data.musicalCue : "";
-          return { id: r.id, label: (range + stage + cue).trim() };
+          const loc = (r.data.location || "").split(/[.:(—]/)[0].trim();
+          const place = PLACE[r.id] || (loc.length > 28 ? loc.slice(0, 26) + "…" : loc) || range;
+          return { id: r.id, label: place, detail: (range + stage + cue).trim() };
         });
       } catch (e) { return []; }
     },
@@ -316,12 +323,12 @@
 
     // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
     const nf = h("div", { class: "block", style: "margin-bottom:18px" });
-    nf.appendChild(h("h3", { html: '🎯 Tareas que apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Netflix' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
+    nf.appendChild(h("h3", { html: '🎯 Tareas que apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Build' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
     const nfList = [];
     data.tasks.forEach((t) => { if (t.netflix) nfList.push(t); });
     data.scenarios.forEach((s) => { if (s.netflix) nfList.push(s); });
     nfList.sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
-    if (!nfList.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Netflix” en el Tracker."));
+    if (!nfList.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Build” en el Tracker."));
     let dragIdx = null;
     nfList.forEach((obj, idx) => {
       const isTask = ("title" in obj);
@@ -355,12 +362,12 @@
 
     const grid = h("div", { class: "two-col" });
 
-    // En qué está cada uno ahora (En progreso), SIN las de Netflix (ya están arriba)
+    // En qué está cada uno ahora (En progreso), SIN las de la build (ya están arriba)
     const ob = h("div", { class: "block" });
     ob.appendChild(h("h3", {}, "🔄 En qué está cada uno ahora"));
     const ongoing = [];
     data.tasks.filter((t) => t.status === "dev" && !t.netflix).forEach((t) => ongoing.push({ who: t.assignee, what: t.title }));
-    if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso” (sin contar las de Netflix)."));
+    if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso” (sin contar las de la build)."));
     ongoing.forEach((o) => {
       const mm = member(o.who);
       ob.appendChild(h("div", { class: "mini-row" }, [
@@ -414,26 +421,19 @@
     if (!ui.editable) { const mm = member(obj[field]); return mm ? h("span", { class: "mini-av", style: "background:" + mm.color, title: mm.name }, mm.initials) : h("span", { class: "deliv-tag" }, "—"); }
     return assigneeCell(obj, field, persist);
   }
-  // Tilde "Netflix": marca que la tarea apunta a la próxima entrega prioritaria
-  function netflixCell(obj, persist) {
-    if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "NETFLIX") : h("span", { class: "deliv-tag" }, "—");
+  // Tilde "Build": la tarea entra en la próxima build (reemplaza a los tildes Netflix y Semana)
+  function buildCell(obj, persist) {
+    if (!ui.editable) return obj.netflix ? h("span", { class: "chip c-deliv" }, "BUILD") : h("span", { class: "deliv-tag" }, "—");
     const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.netflix;
     cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); });
-    return h("label", { class: "nf-check", title: "Apunta a la próxima entrega de Netflix" }, [cb]);
-  }
-  // Tilde "Semana": marca que la tarea es objetivo de esta semana
-  function weekCell(obj, persist) {
-    if (!ui.editable) return obj.week ? h("span", { class: "chip c-dev" }, "SEMANA") : h("span", { class: "deliv-tag" }, "—");
-    const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.week;
-    cb.addEventListener("change", () => { obj.week = cb.checked; persist(); });
-    return h("label", { class: "nf-check", title: "Objetivo de la semana" }, [cb]);
+    return h("label", { class: "nf-check", title: "Entra en la próxima build" }, [cb]);
   }
   // Escena del Script a la que pertenece
   function sceneCell(obj, persist) {
-    if (!ui.editable) { const sc = scenes.find((x) => x.id === obj.scene); return h("span", { class: "deliv-tag" }, sc ? sc.label : "—"); }
+    if (!ui.editable) { const sc = scenes.find((x) => x.id === obj.scene); return h("span", { class: "deliv-tag", title: sc ? sc.detail : "" }, sc ? sc.label : "—"); }
     const sel = h("select", { class: "cell-edit" });
     sel.appendChild(h("option", { value: "" }, "— escena"));
-    scenes.forEach((sc) => { const o = h("option", { value: sc.id }, sc.label); if (obj.scene === sc.id) o.selected = true; sel.appendChild(o); });
+    scenes.forEach((sc) => { const o = h("option", { value: sc.id }, sc.label + (sc.detail ? " · " + sc.detail.split(" ")[0] : "")); if (obj.scene === sc.id) o.selected = true; sel.appendChild(o); });
     sel.addEventListener("change", () => { obj.scene = sel.value; persist(); });
     return sel;
   }
@@ -525,8 +525,7 @@
       hc.push(h("th", { style: "width:180px" }, "Escena"));
       hc.push(h("th", { style: "width:160px" }, "Responsable"));
       hc.push(h("th", { style: "width:120px" }, "Estado"));
-      hc.push(h("th", { class: "center", style: "width:76px" }, "Netflix"));
-      hc.push(h("th", { class: "center", style: "width:76px" }, "Semana"));
+      hc.push(h("th", { class: "center", style: "width:76px" }, "Build"));
       if (ui.editable) hc.push(h("th", { style: "width:36px" }, ""));
       tbl.appendChild(h("thead", {}, h("tr", {}, hc)));
 
@@ -546,12 +545,11 @@
         tr.appendChild(h("td", {}, sceneCell(t, () => persistTask(t))));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
-        tr.appendChild(h("td", { class: "center" }, netflixCell(t, () => persistTask(t))));
-        tr.appendChild(h("td", { class: "center" }, weekCell(t, () => persistTask(t))));
+        tr.appendChild(h("td", { class: "center" }, buildCell(t, () => persistTask(t))));
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
-      if (!tasks.length) { const cols = 6 + (ui.editable ? 2 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
+      if (!tasks.length) { const cols = 5 + (ui.editable ? 2 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
       tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
