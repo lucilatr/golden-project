@@ -18,8 +18,8 @@
     { id: "pa", name: "Pablo Altamiranda",initials: "PA", color: "#b5479b", role: "Lead Dev · Gameplay / integración", dept: "gameplay" },
     { id: "lm", name: "Lucas Mallo",      initials: "LM", color: "#b5479b", role: "Dev · Gameplay / UI", dept: "gameplay" },
     { id: "ls", name: "Lautaro Schipizza",initials: "LS", color: "#8b5cf6", role: "Arte + Lead 3D", dept: "concept" },
-    { id: "be", name: "Belén",            initials: "BE", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
-    { id: "ga", name: "Gastón",           initials: "GA", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
+    { id: "be", name: "Belén Silva",      initials: "BS", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
+    { id: "ga", name: "Gastón Lucarelli", initials: "GL", color: "#8b5cf6", role: "3D Artist", dept: "3d" },
     { id: "mm", name: "Mauricio Medina",  initials: "MM", color: "#8b5cf6", role: "VFX Artist", dept: "animacion" },
     { id: "ac", name: "Andrés Chuhy",     initials: "AC", color: "#8b5cf6", role: "Artist", dept: "concept" },
   ];
