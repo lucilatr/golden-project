@@ -309,16 +309,48 @@
     const host = el("view-resumen"); if (!host) return; host.innerHTML = "";
     const m = data.meta;
 
-    // Objetivo de la semana — a lo ancho, editable a mano (multilínea)
-    const banner = h("div", { class: "next-banner" });
-    const col = h("div", { style: "flex:1;min-width:0" });
-    col.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("🗓 Objetivo de la semana "),
+    // Semana actual: línea de tiempo del proyecto + objetivo (sale del Calendario, así siempre es el de esta semana)
+    m.weekPlans = m.weekPlans || {};
+    const weeks = buildWeeks();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    let nowIdx = weeks.findIndex((w) => w.mon <= today && today <= w.sun);
+    if (nowIdx < 0) nowIdx = today < weeks[0].mon ? 0 : weeks.length - 1;
+    if (ui.weekSel == null) ui.weekSel = nowIdx;
+    const w = weeks[ui.weekSel];
+    const thu = new Date(w.mon); thu.setDate(thu.getDate() + 3);
+    const isNow = ui.weekSel === nowIdx;
+
+    const banner = h("div", { class: "wk-banner" });
+    const top = h("div", { class: "wkb-top" });
+    top.appendChild(h("div", { class: "wkb-num" + (isNow ? "" : " other") }, [
+      h("small", {}, isNow ? "Semana" : (ui.weekSel < nowIdx ? "Semana pasada" : "Semana futura")),
+      h("b", {}, String(ui.weekSel + 1)), h("span", {}, "de " + weeks.length),
+    ]));
+    const col = h("div", { class: "wkb-obj" });
+    col.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("Objetivo para el jueves " + thu.getDate() + " " + MES[thu.getMonth()] + " "),
       ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    col.appendChild(editField(m.weekObjective, (v) => { m.weekObjective = v; persistMeta(); }, "nb-obj", true));
-    const wd = h("div", { class: "nb-date" }); wd.appendChild(document.createTextNode("📅 "));
-    wd.appendChild(editField(m.weekDate, (v) => { m.weekDate = v; persistMeta(); }, ""));
-    col.appendChild(wd);
-    banner.appendChild(col);
+    const obj = editField(m.weekPlans[w.key] || "", (v) => { m.weekPlans[w.key] = v; persistMeta(); }, "nb-obj", true);
+    if (!ui.editable && !m.weekPlans[w.key]) { obj.textContent = "Sin objetivo cargado para esta semana."; obj.classList.add("wkb-empty"); }
+    col.appendChild(obj);
+    w.ms.forEach((ms) => col.appendChild(h("div", { class: "wk-ms", style: "margin-top:8px;display:inline-block" }, [
+      h("b", {}, "⚑ " + ms.label), h("span", {}, " · " + ms.desc + " · " + parseLocal(ms.date).getDate() + " " + MES[parseLocal(ms.date).getMonth()]),
+    ])));
+    if (!isNow) col.appendChild(h("button", { class: "btn-hub", style: "margin-top:10px", onclick: () => { ui.weekSel = nowIdx; renderResumen(); } }, "← Volver a esta semana"));
+    top.appendChild(col);
+    banner.appendChild(top);
+
+    const tl = h("div", { class: "wk-tl" });
+    weeks.forEach((wk, i) => {
+      let cls = "tl-wk" + (i < nowIdx ? " past" : "") + (i === nowIdx ? " now" : "") + (i === ui.weekSel ? " sel" : "") + (wk.ms.length ? " key" : "");
+      tl.appendChild(h("button", { class: cls, title: fmtRange(wk.mon, wk.sun) + (wk.ms.length ? " · ⚑ " + wk.ms.map((x) => x.label).join(", ") : "") + (m.weekPlans[wk.key] ? " — " + m.weekPlans[wk.key] : ""),
+        onclick: () => { ui.weekSel = i; renderResumen(); } }, [
+        h("span", { class: "tl-bar" }),
+        h("span", { class: "tl-n" }, String(i + 1)),
+        h("span", { class: "tl-d" }, wk.mon.getDate() + " " + MES[wk.mon.getMonth()]),
+        ...(wk.ms.length ? [h("span", { class: "tl-ms" }, "⚑")] : []),
+      ]));
+    });
+    banner.appendChild(tl);
     host.appendChild(banner);
 
     // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
