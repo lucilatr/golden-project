@@ -341,17 +341,6 @@
     top.appendChild(col);
     banner.appendChild(top);
 
-    const tl = h("div", { class: "wk-tl" });
-    weeks.forEach((wk, i) => {
-      let cls = "tl-wk" + (i < nowIdx ? " past" : "") + (i === nowIdx ? " now" : "") + (i === ui.weekSel ? " sel" : "") + (wk.ms.length ? " key" : "");
-      tl.appendChild(h("button", { class: cls, title: fmtRange(wk.mon, wk.sun) + (wk.ms.length ? " · ⚑ " + wk.ms.map((x) => x.label).join(", ") : "") + (m.weekPlans[wk.key] ? " — " + m.weekPlans[wk.key] : ""),
-        onclick: () => { ui.weekSel = i; renderResumen(); } }, [
-        h("span", { class: "tl-bar" }),
-        h("span", { class: "tl-n" }, String(i + 1)),
-        h("span", { class: "tl-d" }, wk.mon.getDate() + " " + MES[wk.mon.getMonth()]),
-        ...(wk.ms.length ? [h("span", { class: "tl-ms" }, "⚑")] : []),
-      ]));
-    });
     host.appendChild(banner);
 
     // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
@@ -392,7 +381,6 @@
       nf.appendChild(row);
     });
     if (isNow) col.appendChild(nf);
-    banner.appendChild(tl);
 
     const grid = h("div", { class: "two-col" });
 
