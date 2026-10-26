@@ -362,6 +362,7 @@
         ...(ui.editable ? [h("span", { class: "drag-handle", title: "Arrastrá para reordenar" }, "⠿")] : []),
         h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
         h("div", { class: "txt" }, [document.createTextNode(what), h("small", {}, mm ? mm.name : "Sin asignar")]),
+        ...(isTask && obj.due ? [dueTag(obj)] : []),
         h("span", { class: "chip " + sdef.cls }, sdef.label.toUpperCase()),
       ]);
       if (ui.editable) {
@@ -388,13 +389,14 @@
     const ob = h("div", { class: "block" });
     ob.appendChild(h("h3", {}, "🔄 En qué está cada uno ahora"));
     const ongoing = [];
-    data.tasks.filter((t) => t.status === "dev" && !t.netflix).forEach((t) => ongoing.push({ who: t.assignee, what: t.title }));
+    data.tasks.filter((t) => t.status === "dev" && !t.netflix).forEach((t) => ongoing.push({ who: t.assignee, what: t.title, t: t }));
     if (!ongoing.length) ob.appendChild(h("div", { class: "mini-empty" }, "Nadie marcado “En progreso” (sin contar las de la build)."));
     ongoing.forEach((o) => {
       const mm = member(o.who);
       ob.appendChild(h("div", { class: "mini-row" }, [
         h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
         h("div", { class: "txt" }, [document.createTextNode(mm ? mm.name : "Sin asignar"), h("small", {}, o.what)]),
+        ...(o.t.due ? [dueTag(o.t)] : []),
         h("span", { class: "chip c-dev" }, "EN PROGRESO"),
       ]));
     });
@@ -410,6 +412,7 @@
       rv.appendChild(h("div", { class: "mini-row" }, [
         h("span", { class: "who", style: "background:" + (mm ? mm.color : "#3a4152") }, mm ? mm.initials : "—"),
         h("div", { class: "txt" }, [document.createTextNode(t.title), h("small", {}, mm ? mm.name : "Sin asignar")]),
+        ...(t.due ? [dueTag(t)] : []),
         h("span", { class: "chip " + sdef.cls }, sdef.label.toUpperCase()),
       ]));
     });
@@ -449,6 +452,23 @@
     const cb = h("input", { type: "checkbox" }); cb.checked = !!obj.netflix;
     cb.addEventListener("change", () => { obj.netflix = cb.checked; persist(); });
     return h("label", { class: "nf-check", title: "Entra en la próxima build" }, [cb]);
+  }
+  // Deadline: fecha límite de la tarea (campo "due", AAAA-MM-DD)
+  const DIA = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+  function dueTag(obj) {
+    if (!obj.due) return null;
+    const d = parseLocal(obj.due); const today = new Date(); today.setHours(0, 0, 0, 0);
+    const done = obj.status === "approved" || obj.status === "delivered";
+    const days = Math.round((d - today) / 86400000);
+    const cls = "due" + (done ? " done" : days < 0 ? " late" : days <= 2 ? " soon" : "");
+    return h("span", { class: cls, title: done ? "Deadline" : days < 0 ? "Vencida hace " + (-days) + " día(s)" : days === 0 ? "Vence hoy" : "Faltan " + days + " día(s)" },
+      DIA[d.getDay()] + " " + d.getDate() + " " + MES[d.getMonth()]);
+  }
+  function dueCell(obj, persist) {
+    if (!ui.editable) return dueTag(obj) || h("span", { class: "deliv-tag" }, "—");
+    const inp = h("input", { type: "date", class: "cell-edit due-input" }); inp.value = obj.due || "";
+    inp.addEventListener("change", () => { obj.due = inp.value; persist(); });
+    return inp;
   }
   // Escena del Script a la que pertenece
   function sceneCell(obj, persist) {
@@ -547,6 +567,7 @@
       hc.push(h("th", { style: "width:180px" }, "Escena"));
       hc.push(h("th", { style: "width:160px" }, "Responsable"));
       hc.push(h("th", { style: "width:120px" }, "Estado"));
+      hc.push(h("th", { style: "width:130px" }, "Deadline"));
       hc.push(h("th", { class: "center", style: "width:76px" }, "Build"));
       if (ui.editable) hc.push(h("th", { style: "width:36px" }, ""));
       tbl.appendChild(h("thead", {}, h("tr", {}, hc)));
@@ -567,11 +588,12 @@
         tr.appendChild(h("td", {}, sceneCell(t, () => persistTask(t))));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
+        tr.appendChild(h("td", {}, dueCell(t, () => persistTask(t))));
         tr.appendChild(h("td", { class: "center" }, buildCell(t, () => persistTask(t))));
         if (ui.editable) tr.appendChild(h("td", {}, h("button", { class: "row-del edit-only", title: "Eliminar", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); renderTracker(); } } }, "×")));
         body.appendChild(tr);
       });
-      if (!tasks.length) { const cols = 5 + (ui.editable ? 2 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
+      if (!tasks.length) { const cols = 6 + (ui.editable ? 2 : 0); body.appendChild(h("tr", {}, h("td", { colspan: cols }, h("span", { class: "mini-empty" }, "Sin tareas todavía.")))); }
       tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
@@ -588,7 +610,7 @@
     list.forEach((t, i) => { t.pri = i; persistTask(t); });
   }
   function addTask(dept) {
-    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", netflix: false, week: false, scene: "", thumbUrl: "", pri: nextPri(dept) };
+    const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: "", status: "brief", netflix: false, week: false, scene: "", due: "", thumbUrl: "", pri: nextPri(dept) };
     data.tasks.push(t); persistTask(t); renderTracker();
   }
   async function clearAll() {
