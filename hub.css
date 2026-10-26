@@ -211,3 +211,7 @@ body:not(.hub-ro) .asset-thumb .thumb:hover{border-color:var(--accent)}
 .tl-ms{position:absolute;top:-15px;font-size:11px;color:var(--accent-2)}
 .tl-wk:hover .tl-n{color:var(--text)}
 @media(max-width:700px){.wkb-top{flex-direction:column;gap:12px}.wkb-num{flex-direction:row;gap:10px;align-items:baseline;border-right:0;padding-right:0}.wkb-num b{font-size:44px}.tl-d{display:none}}
+.wkb-note{font-size:13px;color:var(--text-2);white-space:pre-wrap;margin:2px 0 6px}
+body:not(.hub-ro) .wkb-note:empty::before{content:attr(data-ph);color:var(--text-dim);font-style:italic}
+.wkb-build{margin-top:6px}
+.wkb-build .mini-row{padding:8px 0}

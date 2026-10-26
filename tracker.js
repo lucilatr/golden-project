@@ -327,10 +327,12 @@
       h("b", {}, String(ui.weekSel + 1)), h("span", {}, "de " + weeks.length),
     ]));
     const col = h("div", { class: "wkb-obj" });
-    col.appendChild(h("div", { class: "nb-label" }, [document.createTextNode("Objetivo para el jueves " + thu.getDate() + " " + MES[thu.getMonth()] + " "),
+    col.appendChild(h("div", { class: "nb-label" }, [document.createTextNode((isNow ? "🎯 Próximo build · jueves " : "Objetivo para el jueves ") + thu.getDate() + " " + MES[thu.getMonth()] + " "),
       ...(ui.editable ? [h("span", { class: "edit-only", style: "font-size:10px;color:var(--text-dim);text-transform:none;letter-spacing:0" }, "✎ editable")] : [])]));
-    const obj = editField(m.weekPlans[w.key] || "", (v) => { m.weekPlans[w.key] = v; persistMeta(); }, "nb-obj", true);
-    if (!ui.editable && !m.weekPlans[w.key]) { obj.textContent = "Sin objetivo cargado para esta semana."; obj.classList.add("wkb-empty"); }
+    // Nota opcional de la semana (es la misma del Calendario). En la semana actual el objetivo son las tareas tildadas Build.
+    const obj = editField(m.weekPlans[w.key] || "", (v) => { m.weekPlans[w.key] = v; persistMeta(); }, isNow ? "wkb-note" : "nb-obj", true);
+    if (ui.editable && isNow) obj.setAttribute("data-ph", "Nota de la semana (opcional)");
+    if (!ui.editable && !m.weekPlans[w.key]) { if (isNow) obj.style.display = "none"; else { obj.textContent = "Sin objetivo cargado para esta semana."; obj.classList.add("wkb-empty"); } }
     col.appendChild(obj);
     w.ms.forEach((ms) => col.appendChild(h("div", { class: "wk-ms", style: "margin-top:8px;display:inline-block" }, [
       h("b", {}, "⚑ " + ms.label), h("span", {}, " · " + ms.desc + " · " + parseLocal(ms.date).getDate() + " " + MES[parseLocal(ms.date).getMonth()]),
@@ -350,17 +352,16 @@
         ...(wk.ms.length ? [h("span", { class: "tl-ms" }, "⚑")] : []),
       ]));
     });
-    banner.appendChild(tl);
     host.appendChild(banner);
 
     // Apuntan a la próxima entrega (tildadas Netflix) — arrastrables por prioridad
-    const nf = h("div", { class: "block", style: "margin-bottom:18px" });
-    nf.appendChild(h("h3", { html: '🎯 Tareas que apuntan a la próxima entrega <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· Build' + (ui.editable ? " · arrastrá para ordenar por prioridad" : "") + '</small>' }));
+    const nf = h("div", { class: "wkb-build" });
+    if (ui.editable) nf.appendChild(h("div", { class: "edit-only", style: "font-size:11px;color:var(--text-dim);margin-bottom:4px" }, "Arrastrá para ordenar por prioridad. Se suman tildando “Build” en el Tracker."));
     const nfList = [];
     data.tasks.forEach((t) => { if (t.netflix) nfList.push(t); });
     data.scenarios.forEach((s) => { if (s.netflix) nfList.push(s); });
     nfList.sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
-    if (!nfList.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no marcaste tareas para la entrega de Netflix. Tildá la casilla “Build” en el Tracker."));
+    if (!nfList.length) nf.appendChild(h("div", { class: "mini-empty" }, "Todavía no hay tareas para el próximo build. Tildá la casilla “Build” en el Tracker."));
     let dragIdx = null;
     nfList.forEach((obj, idx) => {
       const isTask = ("title" in obj);
@@ -390,7 +391,8 @@
       }
       nf.appendChild(row);
     });
-    host.appendChild(nf);
+    if (isNow) col.appendChild(nf);
+    banner.appendChild(tl);
 
     const grid = h("div", { class: "two-col" });
 
