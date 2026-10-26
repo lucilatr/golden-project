@@ -145,7 +145,13 @@
     async loadScenes() {
       try {
         const { data: rows } = await this.sb.from("segments").select("id,data,pos").eq("doc_id", DOC).order("pos", { ascending: true });
-        return (rows || []).map((r) => ({ id: r.id, label: ((r.data.startTime || "") + "–" + (r.data.endTime || "") + (r.data.musicalCue ? " " + r.data.musicalCue : "")).trim() }));
+        const STAGE_SHORT = { desire_insecurity: "Deseo", transformation: "Transformación", golden: "Consagración" };
+        return (rows || []).map((r) => {
+          const range = (r.data.startTime || "") + "–" + (r.data.endTime || "");
+          const stage = STAGE_SHORT[r.data.narrativeStage] ? " · " + STAGE_SHORT[r.data.narrativeStage] : "";
+          const cue = r.data.musicalCue ? " " + r.data.musicalCue : "";
+          return { id: r.id, label: (range + stage + cue).trim() };
+        });
       } catch (e) { return []; }
     },
     subscribe() {
@@ -500,7 +506,6 @@
 
     DEPTS.forEach((d) => {
       if (ui.filterDept && ui.filterDept !== d.id) return;
-      const is3d = d.id === "3d";
       const tasks = data.tasks.filter((t) => t.dept === d.id && matchP([t.assignee]))
         .sort((a, b) => (a.pri == null ? 9999 : a.pri) - (b.pri == null ? 9999 : b.pri));
       if (ui.filterPerson && !tasks.length) return;
@@ -537,7 +542,7 @@
           tr.addEventListener("dragover", (e) => { e.preventDefault(); });
           tr.addEventListener("drop", (e) => { e.preventDefault(); if (dragId == null || dragId === t.id) return; reorderTask(d.id, dragId, t.id); dragId = null; renderTracker(); });
         }
-        tr.appendChild(titleCell(t, () => persistTask(t), is3d));
+        tr.appendChild(titleCell(t, () => persistTask(t), false));
         tr.appendChild(h("td", {}, sceneCell(t, () => persistTask(t))));
         tr.appendChild(h("td", {}, assigneeCell(t, "assignee", () => persistTask(t))));
         tr.appendChild(h("td", {}, statusCell(t, "status", () => persistTask(t))));
