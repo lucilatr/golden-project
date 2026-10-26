@@ -380,9 +380,9 @@
 
     // Para Dirección: tareas en Brief y Review (para hacer briefs y dar reviews)
     const rv = h("div", { class: "block" });
-    rv.appendChild(h("h3", { html: '📋 Para revisar / aprobar <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· briefs y reviews (Dirección)</small>' }));
-    const toReview = data.tasks.filter((t) => t.status === "brief" || t.status === "review");
-    if (!toReview.length) rv.appendChild(h("div", { class: "mini-empty" }, "Nada pendiente de brief o review."));
+    rv.appendChild(h("h3", { html: '📋 Para revisar / aprobar <small style="color:var(--text-dim);font-weight:400;font-family:var(--mono);font-size:11px">· en review (Dirección)</small>' }));
+    const toReview = data.tasks.filter((t) => t.status === "review");
+    if (!toReview.length) rv.appendChild(h("div", { class: "mini-empty" }, "Nada pendiente de review."));
     toReview.forEach((t) => {
       const mm = member(t.assignee); const sdef = st(t.status);
       rv.appendChild(h("div", { class: "mini-row" }, [
