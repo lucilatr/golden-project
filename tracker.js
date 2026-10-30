@@ -67,6 +67,7 @@
     editable: localStorage.getItem("golden_edit") === "1",
     filterPerson: "",
     filterDept: "",
+    trackerView: (function () { try { return localStorage.getItem("golden_tview") || "board"; } catch (e) { return "board"; } })(),
   };
 
   // Secciones colapsadas (preferencia por navegador)
@@ -499,8 +500,8 @@
     const host = el("view-tracker"); if (!host) return; host.innerHTML = "";
     host.appendChild(h("h2", { class: "sec" }, "Tracker de Producción — assets, responsables y estado"));
 
-    // alta rápida de tareas (arriba de todo, solo en edición)
-    if (ui.editable) {
+    // alta rápida de tareas (solo en la vista lista; en el tablero cada columna tiene su "+ Agregar tarjeta")
+    if (ui.editable && ui.trackerView === "list") {
       const qa = h("div", { class: "quick-add edit-only" });
       qa.appendChild(h("span", { class: "qa-label" }, "➕ Agregar tarea"));
       const titleInp = h("input", { type: "text", placeholder: "Escribí la tarea…" });
@@ -537,12 +538,15 @@
     DEPTS.forEach((d) => { const o = h("option", { value: d.id }, d.label); if (ui.filterDept === d.id) o.selected = true; selD.appendChild(o); });
     selD.addEventListener("change", () => { ui.filterDept = selD.value; renderTracker(); });
     tb.appendChild(selD);
-    if (ui.editable) tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas" }, "🗑 Vaciar"));
+    if (ui.editable && ui.trackerView === "list") tb.appendChild(h("button", { class: "btn-hub edit-only", onclick: clearAll, title: "Borrar todas las tareas" }, "🗑 Vaciar"));
     tb.appendChild(h("span", { class: "spacer" }));
-    const legend = h("div", { class: "legend" });
-    STATUS.forEach((s) => legend.appendChild(h("span", { class: "chip " + s.cls }, s.label.toUpperCase())));
-    tb.appendChild(legend);
+    const setView = (v) => { ui.trackerView = v; try { localStorage.setItem("golden_tview", v); } catch (e) {} renderTracker(); };
+    tb.appendChild(h("div", { class: "kb-switch" }, [
+      h("button", { class: ui.trackerView !== "list" ? "on" : "", onclick: () => setView("board") }, "▦ Tablero"),
+      h("button", { class: ui.trackerView === "list" ? "on" : "", onclick: () => setView("list") }, "☰ Lista"),
+    ]));
     host.appendChild(tb);
+    if (ui.trackerView !== "list") { renderBoard(host); return; }
 
     const matchP = (ids) => !ui.filterPerson || ids.indexOf(ui.filterPerson) >= 0;
 
@@ -597,6 +601,150 @@
       tbl.appendChild(body); if (collapsed[d.id]) tbl.style.display = "none"; sec.appendChild(tbl); host.appendChild(sec);
     });
   }
+
+  /* ============================================================
+     TABLERO (kanban): columnas por estado, tarjetas arrastrables
+     ============================================================ */
+  const DEPT_COLOR = { concept: "#e48bb5", "3d": "#4bb3c4", animacion: "#a98bf5", vfx: "#f0c060", narrativa: "#d9a441",
+    gameplay: "#d36fbf", ui: "#5fc98a", audio: "#6f9cf0", qa: "#9aa3b2" };
+  const deptOf = (id) => DEPTS.find((d) => d.id === id) || { id: id, ico: "•", label: id || "—" };
+  const priOf = (t) => (t.pri == null ? 9999 : t.pri);
+  // Nombre corto del área para la etiqueta de la tarjeta
+  const DEPT_SHORT = { concept: "Concept", "3d": "3D", animacion: "Animación", vfx: "VFX", narrativa: "Narrativa", gameplay: "Gameplay", ui: "UI", audio: "Audio", qa: "QA" };
+  const shortOf = (id) => DEPT_SHORT[id] || deptOf(id).label;
+  // En la tarjeta no repetimos "Área: " si la etiqueta ya lo dice
+  function cardTitle(t) {
+    const p = shortOf(t.dept) + ":"; const ti = t.title || "—";
+    return ti.toLowerCase().startsWith(p.toLowerCase()) ? ti.slice(p.length).trim() : ti;
+  }
+
+  function boardTasks() {
+    return data.tasks.filter((t) => (!ui.filterDept || t.dept === ui.filterDept) && (!ui.filterPerson || t.assignee === ui.filterPerson));
+  }
+
+  function renderBoard(host) {
+    const board = h("div", { class: "kb-board" });
+    const all = boardTasks();
+    let dragId = null;
+
+    function cardEl(t) {
+      const d = deptOf(t.dept); const mm = member(t.assignee);
+      const sc = scenes.find((x) => x.id === t.scene);
+      const badges = [];
+      if (sc) badges.push(h("span", { class: "kb-badge", title: sc.detail || "" }, "📍 " + sc.label));
+      const due = dueTag(t); if (due) badges.push(due);
+      if (t.netflix) badges.push(h("span", { class: "kb-badge kb-build" }, "NEXT BUILD"));
+      const card = h("div", { class: "kb-card", onclick: () => openCard(t) }, [
+        h("span", { class: "kb-label", style: "background:" + (DEPT_COLOR[t.dept] || "#9aa3b2") }, shortOf(t.dept)),
+        h("div", { class: "kb-title" }, cardTitle(t)),
+        h("div", { class: "kb-foot" }, [
+          h("div", { class: "kb-badges" }, badges),
+          mm ? h("span", { class: "avatar", style: "background:" + mm.color, title: mm.name }, mm.initials) : null,
+        ]),
+      ]);
+      if (ui.editable) {
+        card.setAttribute("draggable", "true");
+        card.addEventListener("dragstart", (e) => { dragId = t.id; card.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", t.id); } catch (x) {} });
+        card.addEventListener("dragend", () => { card.classList.remove("dragging"); dragId = null; document.querySelectorAll(".kb-ph").forEach((p) => p.remove()); });
+      }
+      return card;
+    }
+
+    STATUS.forEach((s) => {
+      const cards = all.filter((t) => (t.status || "brief") === s.id)
+        .sort((a, b) => priOf(a) - priOf(b) || DEPTS.indexOf(deptOf(a.dept)) - DEPTS.indexOf(deptOf(b.dept)));
+      const col = h("div", { class: "kb-col kb-" + s.id });
+      col.appendChild(h("div", { class: "kb-col-head" }, [
+        h("span", { class: "chip " + s.cls }, s.label.toUpperCase()), h("span", { class: "kb-count" }, String(cards.length)),
+      ]));
+      const list = h("div", { class: "kb-list" });
+      cards.forEach((t) => list.appendChild(cardEl(t)));
+      if (!cards.length) list.appendChild(h("div", { class: "kb-empty" }, ui.editable ? "Arrastrá tarjetas acá" : "—"));
+      col.appendChild(list);
+
+      if (ui.editable) {
+        col.appendChild(h("button", { class: "kb-add edit-only", onclick: () => {
+          const dept = ui.filterDept || "concept";
+          const t = { id: uid("t"), dept, title: "Nueva tarea", assignee: ui.filterPerson || "", status: s.id, netflix: false, week: false, scene: "", due: "", thumbUrl: "",
+            pri: cards.length ? priOf(cards[cards.length - 1]) + 1 : 0 };
+          data.tasks.push(t); persistTask(t); renderTracker(); openCard(t, true);
+        } }, "+ Agregar tarjeta"));
+
+        // Soltar: la posición sale del mouse; cambia el estado y la prioridad de la tarjeta
+        const ph = h("div", { class: "kb-ph" });
+        const others = () => [...list.querySelectorAll(".kb-card:not(.dragging)")];
+        list.addEventListener("dragover", (e) => {
+          if (!dragId) return; e.preventDefault();
+          const els = others();
+          const i = els.findIndex((c) => { const r = c.getBoundingClientRect(); return e.clientY < r.top + r.height / 2; });
+          const empty = list.querySelector(".kb-empty"); if (empty) empty.style.display = "none";
+          if (i < 0) list.appendChild(ph); else list.insertBefore(ph, els[i]);
+        });
+        list.addEventListener("dragleave", (e) => { if (!list.contains(e.relatedTarget)) ph.remove(); });
+        list.addEventListener("drop", (e) => {
+          e.preventDefault(); if (!dragId) return;
+          const t = data.tasks.find((x) => x.id === dragId); dragId = null; if (!t) return;
+          const rest = cards.filter((x) => x !== t);
+          let i = [...list.children].filter((c) => c === ph || (c.classList.contains("kb-card") && !c.classList.contains("dragging"))).indexOf(ph);
+          if (i < 0) i = rest.length;
+          const prev = rest[i - 1], next = rest[i];
+          t.pri = prev && next ? (priOf(prev) + priOf(next)) / 2 : prev ? priOf(prev) + 1 : next ? priOf(next) - 1 : 0;
+          t.status = s.id;
+          persistTask(t); renderTracker();
+        });
+      }
+      board.appendChild(col);
+    });
+    host.appendChild(board);
+  }
+
+  // Ficha de la tarjeta. En modo edición se cambia todo; en lectura solo se ve.
+  function openCard(t, isNew) {
+    closeCard();
+    const save = () => { persistTask(t); renderTracker(); };
+    const ov = h("div", { class: "kb-modal-ov", onclick: (e) => { if (e.target === ov) closeCard(); } });
+    const box = h("div", { class: "kb-modal" });
+    box.appendChild(h("button", { class: "kb-x", title: "Cerrar", onclick: closeCard }, "×"));
+    box.appendChild(h("span", { class: "kb-label", style: "background:" + (DEPT_COLOR[t.dept] || "#9aa3b2") }, shortOf(t.dept)));
+    const row = (label, node) => h("div", { class: "kb-field" }, [h("label", {}, label), node]);
+    if (ui.editable) {
+      const ti = h("textarea", { class: "kb-title-in", rows: "2" }); ti.value = t.title || "";
+      ti.addEventListener("change", () => { t.title = ti.value.trim(); save(); });
+      ti.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ti.blur(); } });
+      box.appendChild(ti);
+      const dep = h("select", { class: "cell-edit" });
+      DEPTS.forEach((d) => { const o = h("option", { value: d.id }, d.ico + " " + d.label); if (t.dept === d.id) o.selected = true; dep.appendChild(o); });
+      dep.addEventListener("change", () => { t.dept = dep.value; save(); openCard(t); });
+      box.appendChild(h("div", { class: "kb-grid" }, [
+        row("Área", dep),
+        row("Estado", statusCell(t, "status", save)),
+        row("Responsable", assigneeCell(t, "assignee", save)),
+        row("Escena", sceneCell(t, save)),
+        row("Deadline", dueCell(t, save)),
+        row("Next build", buildCell(t, save)),
+      ]));
+      box.appendChild(h("div", { class: "kb-actions" }, [
+        h("button", { class: "btn-hub", onclick: () => { if (confirm("¿Eliminar esta tarea?")) { persistDeleteTask(t); closeCard(); renderTracker(); } } }, "🗑 Eliminar"),
+        h("span", { class: "spacer" }),
+        h("button", { class: "btn-hub accent", onclick: closeCard }, "Listo"),
+      ]));
+      if (isNew) setTimeout(() => { ti.focus(); ti.select(); }, 30);
+    } else {
+      box.appendChild(h("div", { class: "kb-title-ro" }, t.title || "—"));
+      const mm = member(t.assignee); const sc = scenes.find((x) => x.id === t.scene);
+      box.appendChild(h("div", { class: "kb-grid" }, [
+        row("Estado", h("span", { class: "chip " + st(t.status).cls }, st(t.status).label.toUpperCase())),
+        row("Responsable", mm ? h("span", { class: "assignee" }, [h("span", { class: "avatar", style: "background:" + mm.color }, mm.initials), document.createTextNode(mm.name)]) : h("span", { class: "deliv-tag" }, "Sin asignar")),
+        row("Escena", h("span", {}, sc ? sc.label + (sc.detail ? " · " + sc.detail : "") : "—")),
+        row("Deadline", dueTag(t) || h("span", { class: "deliv-tag" }, "—")),
+        row("Next build", h("span", {}, t.netflix ? "Sí" : "No")),
+      ]));
+    }
+    ov.appendChild(box); document.body.appendChild(ov);
+    document.addEventListener("keydown", escClose);
+  }
+  function escClose(e) { if (e.key === "Escape") closeCard(); }
+  function closeCard() { document.querySelectorAll(".kb-modal-ov").forEach((x) => x.remove()); document.removeEventListener("keydown", escClose); }
 
   function nextPri(dept) {
     const ps = data.tasks.filter((t) => t.dept === dept && t.pri != null).map((t) => t.pri);
