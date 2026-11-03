@@ -12,3 +12,8 @@ IGS1_full.docx
 IGS1_full.md
 KPDH_Escenarios/
 .range_server.py
+
+# Tests de navegador
+node_modules/
+test-results/
+playwright-report/
