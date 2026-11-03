@@ -533,7 +533,7 @@
     } else {
       wrap.appendChild(title);
       if ("title" in obj) wrap.appendChild(h("button", { class: "task-media-link", type: "button",
-        onclick: () => openCard(obj) }, taskMedia(obj).length ? "Imágenes y versiones (" + taskMedia(obj).length + ")" : "＋ Imagen / GIF"));
+        onclick: () => openTaskMedia(obj) }, taskMedia(obj).length ? "Imágenes y versiones (" + taskMedia(obj).length + ")" : "＋ Imagen / GIF"));
     }
     return wrap;
   }
@@ -666,6 +666,10 @@
 
   /* ---------------- Imágenes y versiones de cada tarea ---------------- */
   function taskMedia(t) { return Media.items(t, data.attachments); }
+  function openTaskMedia(t) {
+    openCard(t, false, true);
+    if (ui.editable && !taskMedia(t).length) document.querySelector(".kb-modal .media-file-input").click();
+  }
   const MEDIA_STATUS = { review: "En revisión", final: "Final", old: "Vieja" };
   function mediaBadge(item) {
     return h("span", { class: "media-badge media-" + (MEDIA_STATUS[item.status] ? item.status : "review") },
@@ -743,6 +747,14 @@
       drop.addEventListener("dragleave", () => drop.classList.remove("drop-hover"));
       drop.addEventListener("drop", (e) => { e.preventDefault(); e.stopPropagation(); drop.classList.remove("drop-hover"); upload(Array.from(e.dataTransfer.files || [])); });
       section.appendChild(drop);
+    } else {
+      section.appendChild(h("div", { class: "media-drop media-locked" }, [
+        h("span", {}, "Para subir imágenes o GIF, activá la edición de esta tarjeta."),
+        h("button", { class: "btn-hub accent", type: "button", onclick: async () => {
+          await toggleLock();
+          if (ui.editable) openCard(t, false, true);
+        } }, "🔒 Activar edición para subir archivos"),
+      ]));
     }
     section.appendChild(message); section.appendChild(list);
     function renderImages() {
@@ -827,8 +839,7 @@
         card.querySelector(".kb-badges").appendChild(mediaBadge(cover));
       }
       card.appendChild(h("button", { class: "task-media-link", type: "button", onclick: (e) => {
-        e.stopPropagation(); openCard(t);
-        const section = document.querySelector(".task-media"); if (section) section.scrollIntoView({ block: "nearest" });
+        e.stopPropagation(); openTaskMedia(t);
       } }, images.length ? images.length + (images.length === 1 ? " imagen · Ver versiones" : " imágenes · Ver versiones") : "＋ Imagen / GIF"));
       if (ui.editable) {
         card.setAttribute("draggable", "true");
@@ -887,7 +898,7 @@
   }
 
   // Ficha de la tarjeta. En modo edición se cambia todo; en lectura solo se ve.
-  function openCard(t, isNew) {
+  function openCard(t, isNew, focusMedia) {
     closeCard(true);
     const save = () => { persistTask(t); renderTracker(); };
     const ov = h("div", { class: "kb-modal-ov", onclick: (e) => { if (e.target === ov) closeCard(); } });
@@ -932,6 +943,11 @@
     const actions = box.querySelector(".kb-actions");
     if (actions) box.insertBefore(media, actions); else box.appendChild(media);
     ov.appendChild(box); document.body.appendChild(ov);
+    if (focusMedia) requestAnimationFrame(() => {
+      if (!media.isConnected) return;
+      media.scrollIntoView({ block: "start" });
+      const button = media.querySelector("button"); if (button) button.focus({ preventScroll: true });
+    });
     document.addEventListener("keydown", escClose);
   }
   function escClose(e) { if (e.key === "Escape") closeCard(); }

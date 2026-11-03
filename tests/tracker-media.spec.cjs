@@ -101,6 +101,33 @@ test('mobile dialog keeps image controls within the viewport', async ({ page }) 
   expect(sizes.width).toBeLessThanOrEqual(390); expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
 
+for (const view of ['board', 'list']) test(`+ Imagen / GIF opens the computer file chooser from ${view}`, async ({ page }) => {
+  await setup(page);
+  await page.getByRole('button', {name:'Cerrar',exact:true}).click();
+  if (view === 'list') await page.getByRole('button', {name:'Lista',exact:false}).click();
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', {name:'＋ Imagen / GIF',exact:true}).click();
+  await (await chooser).setFiles({name:'desde-boton.png',mimeType:'image/png',buffer:png});
+  await expect(item(page, 'desde-boton.png')).toBeVisible();
+});
+
+test('locked image entry explains how to upload and opens the uploader after unlocking', async ({ page }) => {
+  await setup(page, {editable:false});
+  await page.getByRole('button', {name:'Cerrar',exact:true}).click();
+  await page.getByRole('button', {name:'＋ Imagen / GIF',exact:true}).click();
+  const unlock = page.getByRole('button', {name:'Activar edición para subir archivos'});
+  await expect(unlock).toBeInViewport();
+  await expect(page.locator('.media-file-input')).toHaveCount(0);
+  page.once('dialog', dialog=>dialog.dismiss()); await unlock.click();
+  await expect(page.locator('.media-file-input')).toHaveCount(0);
+  page.once('dialog', dialog=>dialog.accept('test-only-edit-key')); await unlock.click();
+  const uploadButton = page.getByRole('button', {name:'＋ Subir imagen o GIF',exact:true});
+  await expect(uploadButton).toBeInViewport();
+  const chooser = page.waitForEvent('filechooser'); await uploadButton.click();
+  await (await chooser).setFiles({name:'desbloqueada.gif',mimeType:'image/gif',buffer:gif});
+  await expect(item(page, 'desbloqueada.gif')).toBeVisible();
+});
+
 // Supabase protocol mock: independent JSONB rows, persisted across reloads; never a production request.
 const cloudScript = `
 window.GOLDEN_CONFIG = {supabaseUrl:'https://mock.invalid',supabaseAnonKey:'test-only',docId:'test'};
