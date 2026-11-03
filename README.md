@@ -82,3 +82,15 @@ en Git: viven en Supabase (compartidos) o en el navegador (local).
 | `supabase-setup.sql` | Esquema de la base |
 
 Backup / export: botón **⋯ → Export JSON** dentro de la app.
+
+## 5. Tracker: imágenes, GIF y versiones
+
+Abrí una tarjeta y usá **Subir imagen o GIF** (también permite arrastrar varios archivos). Cada archivo recibe un número de versión editable. Elegí **Final** para marcarlo en verde o **Vieja** para dejarlo en naranja; al guardar una nueva final, la anterior pasa a vieja. Cada versión tiene feedback de hasta 300 caracteres y su botón **Descargar**. Guardá los campos con **Guardar versión y feedback**.
+
+Formatos: PNG, JPG, GIF, WebP y AVIF; hasta 50 MB por archivo, sujeto al límite configurado en el bucket. Los GIF se conservan y descargan sin convertirlos. Las miniaturas anteriores siguen disponibles como v001.
+
+Los archivos compartidos usan el bucket existente `tracker-thumbs` (o `thumbBucket` en `config.js`). Cada adjunto se guarda como una fila `kind: "attachment"` en `tracker_items`, con `taskId`, `version`, `status`, `feedback` y la referencia al archivo. No requiere migrar las tareas ni cambiar el esquema SQL existente. Editar una tarea conserva sus adjuntos y los clientes anteriores ignoran esas filas adicionales. En modo local, los archivos se conservan en IndexedDB y sus metadatos en localStorage, solo en ese navegador.
+
+### Pruebas
+
+Con Node.js y Google Chrome instalados: `npm ci` y `npm test`. Playwright inicia un servidor de prueba que reemplaza la configuración compartida y bloquea las solicitudes externas. Las pruebas cubren persistencia local y compartida simulada, versiones, cambio de final, feedback, descargas de GIF, errores de carga, miniaturas anteriores, modo lectura, vista lista, paginación y pantallas pequeñas.

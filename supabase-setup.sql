@@ -39,12 +39,12 @@ create policy "open meta" on doc_meta
 
 -- ------------------------------------------------------------
 -- TRACKER DE PRODUCCIÓN (Hub)
--- Una fila por item: tarea, escenario o meta (objetivos del Resumen).
+-- Una fila por item: tarea, escenario, adjunto versionado o meta (objetivos del Resumen).
 -- ------------------------------------------------------------
 create table if not exists tracker_items (
   id          text primary key,             -- id del item
   doc_id      text not null default 'golden',
-  kind        text not null,                -- 'task' | 'scenario' | 'meta'
+  kind        text not null,                -- 'task' | 'scenario' | 'attachment' | 'meta'
   pos         double precision default 0,   -- orden dentro de su grupo
   data        jsonb not null,               -- el objeto completo del item
   updated_at  timestamptz default now()
@@ -62,7 +62,7 @@ alter publication supabase_realtime add table doc_meta;
 alter publication supabase_realtime add table tracker_items;
 
 -- ------------------------------------------------------------
--- STORAGE: bucket público para miniaturas de escenarios
+-- STORAGE: bucket público para miniaturas e imágenes/GIF versionados del Tracker
 -- (si preferís, crealo desde el panel: Storage → New bucket →
 --  nombre "tracker-thumbs" → Public. Esto hace lo mismo por SQL.)
 -- ------------------------------------------------------------

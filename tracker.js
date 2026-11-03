@@ -9,6 +9,7 @@
   const CFG = window.GOLDEN_CONFIG || {};
   const DOC = CFG.docId || "golden";
   const LS_KEY = "golden_tracker_v1";
+  const Media = window.GoldenTrackerMedia;
 
   /* ---------------- Catálogos ---------------- */
   const TEAM = [
@@ -121,13 +122,20 @@
       return this.enabled;
     },
     async loadAll() {
-      const { data: rows, error } = await this.sb.from("tracker_items").select("*").eq("doc_id", DOC).order("pos", { ascending: true });
-      if (error) throw error;
-      const out = { tasks: [], scenarios: [], meta: {} };
+      const rows = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data: page, error } = await this.sb.from("tracker_items").select("*").eq("doc_id", DOC)
+          .order("pos", { ascending: true }).order("id", { ascending: true }).range(offset, offset + 499);
+        if (error) throw error;
+        rows.push(...(page || []));
+        if (!page || page.length < 500) break;
+      }
+      const out = { tasks: [], scenarios: [], attachments: [], meta: {} };
       (rows || []).forEach((r) => {
         if (r.kind === "task") out.tasks.push(r.data);
         else if (r.kind === "scenario") out.scenarios.push(r.data);
         else if (r.kind === "meta") out.meta = r.data || {};
+        else if (r.kind === "attachment") out.attachments.push({ ...r.data, id: r.id });
       });
       return { rows: rows || [], parsed: out };
     },
@@ -170,9 +178,33 @@
     _busy: false,
     async refresh() {
       if (this._busy) return;
-      // no pisar mientras el usuario escribe en un campo
-      if (document.activeElement && document.activeElement.isContentEditable) return;
-      try { const { parsed } = await this.loadAll(); data = parsed; renderCurrent(); } catch (e) {}
+      // Keep the task being edited stable, including unsaved feedback and in-flight uploads.
+      if (document.querySelector(".kb-modal-ov") || (document.activeElement &&
+        (document.activeElement.isContentEditable || document.activeElement.matches("input,textarea,select")))) return;
+      this._busy = true;
+      try {
+        const { parsed } = await this.loadAll();
+        if (!document.querySelector(".kb-modal-ov")) { data = parsed; renderCurrent(); }
+      } catch (e) {} finally { this._busy = false; }
+    },
+    async saveAttachments(items) {
+      const rows = items.map((item) => ({ id: item.id, doc_id: DOC, kind: "attachment", pos: item.version, data: item }));
+      const { error } = await this.sb.from("tracker_items").upsert(rows);
+      if (error) throw error;
+    },
+    async loadAttachments(taskId) {
+      const { data: rows, error } = await this.sb.from("tracker_items").select("id,data")
+        .eq("doc_id", DOC).eq("kind", "attachment").eq("data->>taskId", taskId);
+      if (error) throw error;
+      return (rows || []).map((r) => ({ ...r.data, id: r.id }));
+    },
+    async uploadAttachment(file, taskId, id) {
+      const ext = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif" }[file.type];
+      const bucket = CFG.thumbBucket || "tracker-thumbs";
+      const path = DOC + "/tasks/" + encodeURIComponent(taskId) + "/" + id + "." + ext;
+      const { error } = await this.sb.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type });
+      if (error) throw error;
+      return { url: this.sb.storage.from(bucket).getPublicUrl(path).data.publicUrl, storagePath: path };
     },
     async uploadThumb(file, scenarioId) {
       const bucket = CFG.thumbBucket || "tracker-thumbs";
@@ -185,7 +217,7 @@
   };
 
   /* ---------------- Persistencia ---------------- */
-  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) {} }
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(data)); return true; } catch (e) { return false; } }
   function posOf(kind, obj) {
     const arr = kind === "task" ? data.tasks : data.scenarios;
     const i = arr.indexOf(obj); return i < 0 ? arr.length : i;
@@ -193,7 +225,15 @@
   function persistTask(t) { if (Sync.enabled) Sync.push("task", t.id, t, posOf("task", t)); else saveLocal(); }
   function persistScenario(s) { if (Sync.enabled) Sync.push("scenario", s.id, s, posOf("scenario", s)); else saveLocal(); }
   function persistMeta() { if (Sync.enabled) Sync.push("meta", "meta", data.meta, 0); else saveLocal(); }
-  function persistDeleteTask(t) { data.tasks = data.tasks.filter((x) => x !== t); if (Sync.enabled) Sync.del(t.id); else saveLocal(); }
+  function persistDeleteTask(t) {
+    data.tasks = data.tasks.filter((x) => x !== t);
+    data.attachments = (data.attachments || []).filter((a) => a.taskId !== t.id);
+    if (Sync.enabled) {
+      Sync.del(t.id);
+      Sync.sb.from("tracker_items").delete().eq("doc_id", DOC).eq("kind", "attachment").eq("data->>taskId", t.id)
+        .then(({ error }) => { if (error) toast("No se pudieron eliminar las referencias de imágenes."); });
+    } else saveLocal();
+  }
   function persistDeleteScenario(s) { data.scenarios = data.scenarios.filter((x) => x !== s); if (Sync.enabled) Sync.del(s.id); else saveLocal(); }
 
   /* ---------------- Candado de edición ---------------- */
@@ -492,6 +532,8 @@
       at.appendChild(thumb); at.appendChild(title); wrap.appendChild(at);
     } else {
       wrap.appendChild(title);
+      if ("title" in obj) wrap.appendChild(h("button", { class: "task-media-link", type: "button",
+        onclick: () => openCard(obj) }, taskMedia(obj).length ? "Imágenes y versiones (" + taskMedia(obj).length + ")" : "＋ Imagen / GIF"));
     }
     return wrap;
   }
@@ -622,6 +664,142 @@
     return data.tasks.filter((t) => (!ui.filterDept || t.dept === ui.filterDept) && (!ui.filterPerson || t.assignee === ui.filterPerson));
   }
 
+  /* ---------------- Imágenes y versiones de cada tarea ---------------- */
+  function taskMedia(t) { return Media.items(t, data.attachments); }
+  const MEDIA_STATUS = { review: "En revisión", final: "Final", old: "Vieja" };
+  function mediaBadge(item) {
+    return h("span", { class: "media-badge media-" + (MEDIA_STATUS[item.status] ? item.status : "review") },
+      Media.label(item.version) + " · " + (MEDIA_STATUS[item.status] || MEDIA_STATUS.review));
+  }
+  function mediaPreview(item, cls) {
+    const img = h("img", { class: cls, alt: item.name || "Imagen de la tarea", loading: "lazy", draggable: "false" });
+    img.addEventListener("error", () => { img.alt = "Imagen no disponible · " + (item.name || ""); img.classList.add("media-unavailable"); });
+    Media.source(item).then((url) => { if (url) img.src = url; else img.dispatchEvent(new Event("error")); })
+      .catch(() => img.dispatchEvent(new Event("error")));
+    return img;
+  }
+  async function freshTaskMedia(t) {
+    if (Sync.enabled) {
+      const items = await Sync.loadAttachments(t.id);
+      data.attachments = (data.attachments || []).filter((a) => a.taskId !== t.id).concat(items);
+    }
+    return taskMedia(t);
+  }
+  async function saveMedia(items) {
+    if (Sync.enabled) await Sync.saveAttachments(items);
+    const before = data.attachments || [], ids = new Set(items.map((a) => a.id));
+    data.attachments = before.filter((a) => !ids.has(a.id)).concat(items);
+    if (!Sync.enabled && !saveLocal()) {
+      data.attachments = before;
+      throw new Error("El navegador no pudo guardar los datos. Liberá espacio y volvé a intentar.");
+    }
+    renderTracker();
+  }
+  function mediaSection(t) {
+    const section = h("section", { class: "task-media", "aria-label": "Imágenes y versiones" });
+    section.appendChild(h("h3", {}, "Imágenes y versiones"));
+    section.appendChild(h("p", { class: "media-help" }, "Verde: final · Naranja: vieja · Cada versión conserva su feedback."));
+    const message = h("p", { class: "media-message", role: "status", "aria-live": "polite" });
+    const list = h("div", { class: "media-list" });
+    const drafts = new Map();
+    let busy = false, uploadButton;
+    function setBusy(value) {
+      busy = value; section.setAttribute("aria-busy", String(value));
+      section.querySelectorAll("input,textarea,select,button").forEach((n) => { n.disabled = value; });
+    }
+    async function upload(files) {
+      if (!ui.editable || busy || !files.length) return;
+      setBusy(true); message.textContent = "Preparando archivos…";
+      try {
+        await freshTaskMedia(t);
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]; await Media.validate(file);
+          message.textContent = "Subiendo " + (i + 1) + "/" + files.length + ": " + file.name;
+          const id = "attachment-" + crypto.randomUUID();
+          const version = Math.max(0, ...taskMedia(t).map((a) => Number(a.version) || 1)) + 1;
+          const item = { id, taskId: t.id, version, name: file.name, mime: file.type, size: file.size,
+            status: "review", feedback: "", createdAt: new Date().toISOString() };
+          if (Sync.enabled) Object.assign(item, await Sync.uploadAttachment(file, t.id, id));
+          else { await Media.localFile(id, file); item.localKey = id; }
+          try { await saveMedia([item]); }
+          catch (error) {
+            if (item.storagePath) await Sync.sb.storage.from(CFG.thumbBucket || "tracker-thumbs").remove([item.storagePath]);
+            throw error;
+          }
+          renderImages();
+        }
+        message.textContent = Sync.enabled ? "Archivos guardados y compartidos." : "Archivos guardados en este navegador.";
+      } catch (error) { message.textContent = error.message || "No se pudo subir el archivo. Intentá nuevamente."; }
+      finally { setBusy(false); }
+    }
+    if (ui.editable) {
+      const input = h("input", { type: "file", class: "media-file-input", accept: Media.TYPES.join(","), multiple: true,
+        "aria-label": "Elegir imágenes o GIF" });
+      input.addEventListener("change", () => { const files = Array.from(input.files || []); input.value = ""; upload(files); });
+      uploadButton = h("button", { class: "btn-hub accent", type: "button", onclick: () => input.click() }, "＋ Subir imagen o GIF");
+      const drop = h("div", { class: "media-drop" }, [uploadButton, input,
+        h("span", {}, "o arrastrá archivos acá · PNG, JPG, WebP, AVIF y GIF · hasta 50 MB por archivo")]);
+      drop.addEventListener("dragover", (e) => { e.preventDefault(); e.stopPropagation(); if (!busy) drop.classList.add("drop-hover"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("drop-hover"));
+      drop.addEventListener("drop", (e) => { e.preventDefault(); e.stopPropagation(); drop.classList.remove("drop-hover"); upload(Array.from(e.dataTransfer.files || [])); });
+      section.appendChild(drop);
+    }
+    section.appendChild(message); section.appendChild(list);
+    function renderImages() {
+      list.replaceChildren();
+      const items = taskMedia(t).slice().reverse();
+      if (!items.length) list.appendChild(h("p", { class: "media-empty" }, "Todavía no hay imágenes en esta tarea."));
+      items.forEach((item) => {
+        const article = h("article", { class: "media-item media-" + (MEDIA_STATUS[item.status] ? item.status : "review"), "data-attachment-id": item.id });
+        article.appendChild(h("div", { class: "media-item-head" }, [mediaBadge(item), h("span", { class: "media-filename", title: item.name }, item.name)]));
+        article.appendChild(mediaPreview(item, "media-image"));
+        if (ui.editable) {
+          const draft = drafts.get(item.id) || { version: item.version, status: item.status, feedback: item.feedback || "" };
+          const version = h("input", { type: "number", class: "cell-edit", min: "1", step: "1", "aria-label": "Número de versión" }); version.value = draft.version;
+          const status = h("select", { class: "cell-edit", "aria-label": "Estado de la imagen" });
+          Object.entries(MEDIA_STATUS).forEach(([value, text]) => { const option = h("option", { value }, text); option.selected = draft.status === value; status.appendChild(option); });
+          const feedback = h("textarea", { class: "media-feedback", rows: "3", maxlength: "300", "aria-label": "Feedback de la imagen", placeholder: "Feedback para esta versión (máx. 300 caracteres)…" }); feedback.value = Media.feedback(draft.feedback);
+          const count = h("span", { class: "media-count", "aria-live": "polite" }, feedback.value.length + "/300");
+          const remember = () => { feedback.value = Media.feedback(feedback.value); count.textContent = feedback.value.length + "/300";
+            drafts.set(item.id, { version: version.value, status: status.value, feedback: feedback.value }); };
+          version.addEventListener("input", remember); status.addEventListener("change", remember); feedback.addEventListener("input", remember);
+          const save = h("button", { class: "btn-hub", type: "button", onclick: async () => {
+            if (busy || !ui.editable) return;
+            remember(); const number = Number(version.value);
+            if (!Number.isSafeInteger(number) || number < 1) { message.textContent = "La versión debe ser un número entero mayor que cero."; version.focus(); return; }
+            setBusy(true); message.textContent = "Guardando versión y feedback…";
+            try {
+              const latest = await freshTaskMedia(t);
+              if (latest.some((a) => a.id !== item.id && Number(a.version) === number)) throw new Error("Ya existe esa versión en esta tarea. Elegí otro número.");
+              const current = latest.find((a) => a.id === item.id);
+              if (!current) throw new Error("Esta imagen ya no está disponible. Cerrá y volvé a abrir la tarea.");
+              const updated = { ...current, version: number, status: status.value, feedback: Media.feedback(feedback.value), updatedAt: new Date().toISOString() };
+              const changes = [updated];
+              if (updated.status === "final") {
+                updated.finalizedAt = updated.updatedAt;
+                latest.filter((a) => a.id !== item.id && a.status === "final").forEach((a) => changes.push({ ...a, status: "old" }));
+              }
+              await saveMedia(changes); drafts.delete(item.id); renderImages(); message.textContent = "Versión y feedback guardados.";
+            } catch (error) { message.textContent = error.message || "No se pudieron guardar los cambios. Intentá nuevamente."; }
+            finally { setBusy(false); }
+          } }, "Guardar versión y feedback");
+          article.appendChild(h("div", { class: "media-fields" }, [h("label", {}, ["Versión", version]), h("label", {}, ["Estado", status])]));
+          article.appendChild(h("label", { class: "media-feedback-label" }, ["Feedback", feedback]));
+          article.appendChild(h("div", { class: "media-save" }, [count, save]));
+        } else article.appendChild(h("p", { class: "media-feedback-ro" }, item.feedback || "Sin feedback."));
+        article.appendChild(h("button", { class: "btn-hub media-download", type: "button", onclick: async (e) => {
+          const button = e.currentTarget; button.disabled = true;
+          try { await Media.download(item); }
+          catch (error) { message.textContent = error.message || "No se pudo descargar la imagen."; }
+          finally { button.disabled = false; }
+        } }, "↓ Descargar " + Media.label(item.version)));
+        list.appendChild(article);
+      });
+    }
+    renderImages();
+    return section;
+  }
+
   function renderBoard(host) {
     const board = h("div", { class: "kb-board" });
     const all = boardTasks();
@@ -642,6 +820,16 @@
           mm ? h("span", { class: "avatar", style: "background:" + mm.color, title: mm.name }, mm.initials) : null,
         ]),
       ]);
+      const images = taskMedia(t), cover = images.find((a) => a.status === "final") || images[images.length - 1];
+      if (cover) {
+        const preview = mediaPreview(cover, "kb-media-preview");
+        card.insertBefore(preview, card.querySelector(".kb-title"));
+        card.querySelector(".kb-badges").appendChild(mediaBadge(cover));
+      }
+      card.appendChild(h("button", { class: "task-media-link", type: "button", onclick: (e) => {
+        e.stopPropagation(); openCard(t);
+        const section = document.querySelector(".task-media"); if (section) section.scrollIntoView({ block: "nearest" });
+      } }, images.length ? images.length + (images.length === 1 ? " imagen · Ver versiones" : " imágenes · Ver versiones") : "＋ Imagen / GIF"));
       if (ui.editable) {
         card.setAttribute("draggable", "true");
         card.addEventListener("dragstart", (e) => { dragId = t.id; card.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", t.id); } catch (x) {} });
@@ -700,11 +888,11 @@
 
   // Ficha de la tarjeta. En modo edición se cambia todo; en lectura solo se ve.
   function openCard(t, isNew) {
-    closeCard();
+    closeCard(true);
     const save = () => { persistTask(t); renderTracker(); };
     const ov = h("div", { class: "kb-modal-ov", onclick: (e) => { if (e.target === ov) closeCard(); } });
-    const box = h("div", { class: "kb-modal" });
-    box.appendChild(h("button", { class: "kb-x", title: "Cerrar", onclick: closeCard }, "×"));
+    const box = h("div", { class: "kb-modal", role: "dialog", "aria-modal": "true", "aria-label": "Detalle de tarea" });
+    box.appendChild(h("button", { class: "kb-x", title: "Cerrar", "aria-label": "Cerrar", onclick: () => closeCard() }, "×"));
     box.appendChild(h("span", { class: "kb-label", style: "background:" + (DEPT_COLOR[t.dept] || "#9aa3b2") }, shortOf(t.dept)));
     const row = (label, node) => h("div", { class: "kb-field" }, [h("label", {}, label), node]);
     if (ui.editable) {
@@ -740,11 +928,17 @@
         row("Next build", h("span", {}, t.netflix ? "Sí" : "No")),
       ]));
     }
+    const media = mediaSection(t);
+    const actions = box.querySelector(".kb-actions");
+    if (actions) box.insertBefore(media, actions); else box.appendChild(media);
     ov.appendChild(box); document.body.appendChild(ov);
     document.addEventListener("keydown", escClose);
   }
   function escClose(e) { if (e.key === "Escape") closeCard(); }
-  function closeCard() { document.querySelectorAll(".kb-modal-ov").forEach((x) => x.remove()); document.removeEventListener("keydown", escClose); }
+  function closeCard(reopening) {
+    document.querySelectorAll(".kb-modal-ov").forEach((x) => x.remove()); document.removeEventListener("keydown", escClose);
+    if (reopening !== true && Sync.enabled) Sync.refresh();
+  }
 
   function nextPri(dept) {
     const ps = data.tasks.filter((t) => t.dept === dept && t.pri != null).map((t) => t.pri);
