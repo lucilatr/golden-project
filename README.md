@@ -87,6 +87,8 @@ Backup / export: botón **⋯ → Export JSON** dentro de la app.
 
 Abrí una tarjeta y usá **Subir imagen o GIF** (también permite arrastrar varios archivos). Cada archivo recibe un número de versión editable. Elegí **Final** para marcarlo en verde o **Vieja** para dejarlo en naranja; al guardar una nueva final, la anterior pasa a vieja. Cada versión tiene feedback de hasta 300 caracteres y su botón **Descargar**. Guardá los campos con **Guardar versión y feedback**.
 
+El botón **＋ Imagen / GIF** de una tarea sin adjuntos abre directamente el selector de archivos cuando la edición está activa. En modo lectura lleva a la sección de imágenes y muestra **Activar edición para subir archivos**; usa la misma clave de edición del Hub.
+
 Formatos: PNG, JPG, GIF, WebP y AVIF; hasta 50 MB por archivo, sujeto al límite configurado en el bucket. Los GIF se conservan y descargan sin convertirlos. Las miniaturas anteriores siguen disponibles como v001.
 
 Los archivos compartidos usan el bucket existente `tracker-thumbs` (o `thumbBucket` en `config.js`). Cada adjunto se guarda como una fila `kind: "attachment"` en `tracker_items`, con `taskId`, `version`, `status`, `feedback` y la referencia al archivo. No requiere migrar las tareas ni cambiar el esquema SQL existente. Editar una tarea conserva sus adjuntos y los clientes anteriores ignoran esas filas adicionales. En modo local, los archivos se conservan en IndexedDB y sus metadatos en localStorage, solo en ese navegador.
