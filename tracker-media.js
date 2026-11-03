@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const MAX_BYTES = 50 * 1024 * 1024;
-  const TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif"];
+  const TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif", "video/mp4"];
   const urls = new Map();
   let database;
   const feedback = (text) => String(text || "").slice(0, 300);
@@ -26,7 +26,7 @@
     return list.sort((a, b) => (Number(a.version) || 1) - (Number(b.version) || 1) || a.id.localeCompare(b.id));
   }
   async function validate(file) {
-    if (!TYPES.includes(file.type)) throw new Error("Elegí una imagen PNG, JPG, WebP, AVIF o un GIF.");
+    if (!TYPES.includes(file.type)) throw new Error("Elegí una imagen PNG, JPG, WebP, AVIF, un GIF o un video MP4.");
     if (!file.size || file.size > MAX_BYTES) throw new Error("El archivo debe pesar entre 1 byte y 50 MB.");
     const b = new Uint8Array(await file.slice(0, 64).arrayBuffer());
     const ascii = (start, end) => String.fromCharCode(...b.slice(start, end));
@@ -34,8 +34,9 @@
       file.type === "image/jpeg" ? b[0] === 255 && b[1] === 216 && b[2] === 255 :
       file.type === "image/gif" ? /^GIF8[79]a$/.test(ascii(0, 6)) :
       file.type === "image/webp" ? ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP" :
+      file.type === "video/mp4" ? ascii(4, 8) === "ftyp" && /^(isom|iso[2-9]|mp4[12]|avc1|M4V |MSNV|dash)$/.test(ascii(8, 12)) :
       ascii(4, 8) === "ftyp" && /avif|avis/.test(ascii(8, 64));
-    if (!valid) throw new Error("El contenido del archivo no coincide con su formato de imagen.");
+    if (!valid) throw new Error("El contenido del archivo no coincide con su formato.");
   }
   function db() {
     if (!database) database = new Promise((resolve, reject) => {
@@ -62,7 +63,7 @@
       return file;
     }
     const url = safeUrl(item.url);
-    if (!url) throw new Error("La imagen no tiene una dirección disponible.");
+    if (!url) throw new Error("El archivo no tiene una dirección disponible.");
     const response = await fetch(url);
     if (!response.ok) throw new Error("No se pudo descargar el archivo. Intentá nuevamente.");
     return response.blob();
@@ -74,7 +75,7 @@
   }
   async function download(item) {
     const file = await blob(item), url = URL.createObjectURL(file), a = document.createElement("a");
-    const extension = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif" }[TYPES.includes(file.type) ? file.type : item.mime] || "png";
+    const extension = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif", "video/mp4": "mp4" }[TYPES.includes(file.type) ? file.type : item.mime] || "png";
     const name = String(item.name || "imagen").replace(/[\\/:*?"<>|\x00-\x1f]/g, "_").replace(/\.[^.]+$/, "");
     a.href = url; a.download = label(item.version) + "_" + name + "." + extension;
     document.body.appendChild(a); a.click(); a.remove();

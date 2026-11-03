@@ -10,7 +10,7 @@ http.createServer((req, res) => {
   if (pathname === '/favicon.ico') { res.writeHead(204).end(); return; }
   fs.readFile(file, (error, data) => {
     if (error) { res.writeHead(404).end(); return; }
-    res.setHeader('Content-Type', ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' })[path.extname(file)] || 'application/octet-stream');
+    res.setHeader('Content-Type', ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.mp4': 'video/mp4' })[path.extname(file)] || 'application/octet-stream');
     res.end(data);
   });
 }).listen(4174, '127.0.0.1');
