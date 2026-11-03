@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('node:fs/promises');
+const path = require('node:path');
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==', 'base64');
 const singleGif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 const gif = Buffer.concat([singleGif.subarray(0, 19), singleGif.subarray(19, -1), singleGif.subarray(19, -1), Buffer.from([59])]);
@@ -24,8 +25,8 @@ async function upload(page, name, bytes = png, mime = 'image/png') {
 async function save(page, name, values = {}) {
   const article = item(page, name);
   if (values.version != null) await article.getByLabel('Número de versión').fill(String(values.version));
-  if (values.status) await article.getByLabel('Estado de la imagen').selectOption(values.status);
-  if (values.feedback != null) await article.getByLabel('Feedback de la imagen').fill(values.feedback);
+  if (values.status) await article.getByLabel('Estado del archivo').selectOption(values.status);
+  if (values.feedback != null) await article.getByLabel('Feedback del archivo').fill(values.feedback);
   await article.getByRole('button', { name: 'Guardar versión y feedback' }).click();
   await expect(page.locator('.media-message')).toHaveText('Versión y feedback guardados.');
 }
@@ -35,13 +36,13 @@ test('PNG + animated GIF persist locally; versions, final rollover, feedback lim
   await upload(page, 'subte.png'); await save(page, 'subte.png', { status: 'final', feedback: 'Primera revisión.' });
   await upload(page, 'subte.gif', gif, 'image/gif');
   await expect(item(page, 'subte.gif').getByLabel('Número de versión')).toHaveValue('2');
-  await item(page, 'subte.gif').getByLabel('Feedback de la imagen').fill('a'.repeat(310));
-  await expect(item(page, 'subte.gif').getByLabel('Feedback de la imagen')).toHaveValue('a'.repeat(300));
+  await item(page, 'subte.gif').getByLabel('Feedback del archivo').fill('a'.repeat(310));
+  await expect(item(page, 'subte.gif').getByLabel('Feedback del archivo')).toHaveValue('a'.repeat(300));
   await expect(item(page, 'subte.gif').locator('.media-count')).toHaveText('300/300');
   await save(page, 'subte.gif', { status: 'final' });
   await expect(item(page, 'subte.png')).toHaveClass(/media-old/);
   await expect(item(page, 'subte.gif')).toHaveClass(/media-final/);
-  await expect(item(page, 'subte.png').getByLabel('Feedback de la imagen')).toHaveValue('Primera revisión.');
+  await expect(item(page, 'subte.png').getByLabel('Feedback del archivo')).toHaveValue('Primera revisión.');
   const downloadPromise = page.waitForEvent('download');
   await item(page, 'subte.gif').getByRole('button', { name: 'Descargar' }).click();
   const download = await downloadPromise;
@@ -50,7 +51,7 @@ test('PNG + animated GIF persist locally; versions, final rollover, feedback lim
   await page.reload(); await page.evaluate(() => window.GoldenHub.show('tracker')); await page.locator('.kb-card').click();
   await expect(page.locator('.media-item')).toHaveCount(2);
   await expect(item(page, 'subte.gif').locator('img')).toHaveJSProperty('naturalWidth', 1);
-  await expect(item(page, 'subte.gif').getByLabel('Feedback de la imagen')).toHaveValue('a'.repeat(300));
+  await expect(item(page, 'subte.gif').getByLabel('Feedback del archivo')).toHaveValue('a'.repeat(300));
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('golden_tracker_v1')));
   expect(saved.tasks[0].customField).toBe('keep me');
   expect(saved.attachments.every(a => !a.url && a.localKey)).toBe(true);
@@ -78,7 +79,7 @@ test('old thumbnail remains v001; list view and read-only viewers can open and d
   await upload(page, 'nueva.png'); await save(page, 'nueva.png', { status: 'old', version: 7, feedback: '<b>Revisar luz</b>' });
   await page.getByRole('button', { name: 'Cerrar', exact: true }).click();
   await page.getByRole('button', { name: 'Lista', exact: false }).click();
-  await page.getByRole('button', { name: 'Imágenes y versiones (2)' }).click();
+  await page.getByRole('button', { name: 'Imágenes, GIF y videos (2)' }).click();
   await expect(page.locator('.media-item')).toHaveCount(2);
 });
 
@@ -87,7 +88,7 @@ test('read-only media have no editing controls, feedback is plain text and downl
   readonly.attachments = [{ id: 'existing-image', taskId: 'test-task', url: 'data:image/gif;base64,' + gif.toString('base64'), mime: 'image/gif', name: 'final.gif', version: 3, status: 'final', feedback: '<b>Feedback literal</b>' }];
   await setup(page, { seed: readonly, editable: false });
   await expect(page.locator('.media-file-input')).toHaveCount(0);
-  await expect(page.getByLabel('Feedback de la imagen')).toHaveCount(0);
+  await expect(page.getByLabel('Feedback del archivo')).toHaveCount(0);
   await expect(page.locator('.media-feedback-ro')).toHaveText('<b>Feedback literal</b>');
   await expect(page.locator('.media-feedback-ro b')).toHaveCount(0);
   const download = page.waitForEvent('download'); await page.getByRole('button', { name: 'Descargar' }).click();
@@ -106,7 +107,7 @@ for (const view of ['board', 'list']) test(`+ Imagen / GIF opens the computer fi
   await page.getByRole('button', {name:'Cerrar',exact:true}).click();
   if (view === 'list') await page.getByRole('button', {name:'Lista',exact:false}).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', {name:'＋ Imagen / GIF',exact:true}).click();
+  await page.getByRole('button', {name:'＋ Imagen / GIF / MP4',exact:true}).click();
   await (await chooser).setFiles({name:'desde-boton.png',mimeType:'image/png',buffer:png});
   await expect(item(page, 'desde-boton.png')).toBeVisible();
 });
@@ -114,14 +115,14 @@ for (const view of ['board', 'list']) test(`+ Imagen / GIF opens the computer fi
 test('locked image entry explains how to upload and opens the uploader after unlocking', async ({ page }) => {
   await setup(page, {editable:false});
   await page.getByRole('button', {name:'Cerrar',exact:true}).click();
-  await page.getByRole('button', {name:'＋ Imagen / GIF',exact:true}).click();
+  await page.getByRole('button', {name:'＋ Imagen / GIF / MP4',exact:true}).click();
   const unlock = page.getByRole('button', {name:'Activar edición para subir archivos'});
   await expect(unlock).toBeInViewport();
   await expect(page.locator('.media-file-input')).toHaveCount(0);
   page.once('dialog', dialog=>dialog.dismiss()); await unlock.click();
   await expect(page.locator('.media-file-input')).toHaveCount(0);
   page.once('dialog', dialog=>dialog.accept('test-only-edit-key')); await unlock.click();
-  const uploadButton = page.getByRole('button', {name:'＋ Subir imagen o GIF',exact:true});
+  const uploadButton = page.getByRole('button', {name:'＋ Subir imagen, GIF o MP4',exact:true});
   await expect(uploadButton).toBeInViewport();
   const chooser = page.waitForEvent('filechooser'); await uploadButton.click();
   await (await chooser).setFiles({name:'desbloqueada.gif',mimeType:'image/gif',buffer:gif});
@@ -164,6 +165,56 @@ async function setupCloud(page) {
   await page.locator('.kb-card').click();
 }
 
+test('MP4 plays, persists after reload, keeps earlier images and downloads the original bytes', async ({ page }) => {
+  const mp4 = await fs.readFile(path.join(__dirname, 'fixtures/review.mp4'));
+  await setup(page);
+  await upload(page, 'referencia.png');
+  await save(page, 'referencia.png', { status: 'final', feedback: 'Referencia anterior' });
+  await upload(page, 'revision.mp4', mp4, 'video/mp4');
+  const video = item(page, 'revision.mp4').locator('video');
+  await expect(video).toHaveJSProperty('controls', true);
+  await expect(video).toHaveJSProperty('videoWidth', 160);
+  await video.evaluate(async v => { await v.play(); });
+  await expect.poll(() => video.evaluate(v => v.currentTime)).toBeGreaterThan(0);
+  await save(page, 'revision.mp4', { status: 'final', feedback: 'Video aprobado' });
+  await expect(item(page, 'referencia.png')).toHaveClass(/media-old/);
+  await page.reload(); await page.evaluate(() => window.GoldenHub.show('tracker'));
+  await expect(page.locator('.kb-card video')).toHaveCount(1);
+  await page.locator('.kb-card').click();
+  await expect(item(page, 'revision.mp4').locator('video')).toHaveJSProperty('videoWidth', 160);
+  await expect(item(page, 'revision.mp4').getByLabel('Feedback del archivo')).toHaveValue('Video aprobado');
+  const pending = page.waitForEvent('download');
+  await item(page, 'revision.mp4').getByRole('button', {name:'Descargar'}).click();
+  const download = await pending;
+  expect(download.suggestedFilename()).toBe('v002_revision.mp4');
+  expect(await fs.readFile(await download.path())).toEqual(mp4);
+  await expect(page.locator('.media-item')).toHaveCount(2);
+});
+
+test('invalid and oversized MP4 are rejected without saving an attachment', async ({ page }) => {
+  await setup(page);
+  await page.locator('.media-file-input').setInputFiles({name:'falso.mp4',mimeType:'video/mp4',buffer:png});
+  await expect(page.locator('.media-message')).toContainText('no coincide');
+  const sizeError = await page.evaluate(async () => {
+    try { await GoldenTrackerMedia.validate(new File([new Uint8Array(GoldenTrackerMedia.MAX_BYTES+1)], 'grande.mp4', {type:'video/mp4'})); }
+    catch(e) { return e.message; }
+  });
+  expect(sizeError).toContain('50 MB');
+  await expect(page.locator('.media-item')).toHaveCount(0);
+});
+
+test('shared MP4 uses its MIME type and extension and saves independent version metadata', async ({ page }) => {
+  await setupCloud(page);
+  await upload(page, 'compartida.mp4', await fs.readFile(path.join(__dirname,'fixtures/review.mp4')), 'video/mp4');
+  const saved = await page.evaluate(() => ({rows:__cloud.rows.filter(r=>r.kind==='attachment'), files:__cloud.files}));
+  expect(saved.rows).toHaveLength(1);
+  expect(saved.rows[0].data.mime).toBe('video/mp4');
+  expect(saved.rows[0].data.storagePath).toMatch(/\.mp4$/);
+  expect(Object.values(saved.files)[0].mime).toBe('video/mp4');
+  await page.reload(); await page.evaluate(() => window.GoldenHub.show('tracker')); await page.locator('.kb-card').click();
+  await expect(item(page,'compartida.mp4').locator('video')).toHaveCount(1);
+});
+
 test('shared upload is stored as a separate row, survives reload and task updates; newer final archives the previous one', async ({ page }) => {
   await setupCloud(page); await upload(page, 'compartida.png'); await save(page, 'compartida.png', { status: 'final', feedback: 'Revisada' });
   await upload(page, 'compartida.gif', gif, 'image/gif'); await save(page, 'compartida.gif', { status: 'final' });
@@ -176,13 +227,13 @@ test('shared upload is stored as a separate row, survives reload and task update
   await page.reload(); await page.evaluate(() => window.GoldenHub.show('tracker')); await page.locator('.kb-card').click();
   await expect(page.locator('.media-item')).toHaveCount(2);
   await expect(item(page, 'compartida.gif')).toHaveClass(/media-final/);
-  await expect(item(page, 'compartida.png').getByLabel('Feedback de la imagen')).toHaveValue('Revisada');
+  await expect(item(page, 'compartida.png').getByLabel('Feedback del archivo')).toHaveValue('Revisada');
   await expect(page.locator('.kb-title-in')).toHaveValue('Subte actualizado');
 });
 
 test('a batch gets consecutive versions and unsaved feedback on another image is retained', async ({ page }) => {
   await setup(page); await upload(page, 'base.png');
-  await item(page, 'base.png').getByLabel('Feedback de la imagen').fill('Borrador que se conserva');
+  await item(page, 'base.png').getByLabel('Feedback del archivo').fill('Borrador que se conserva');
   await page.locator('.media-file-input').setInputFiles([
     {name:'segunda.png',mimeType:'image/png',buffer:png}, {name:'tercera.gif',mimeType:'image/gif',buffer:gif},
   ]);
@@ -190,7 +241,7 @@ test('a batch gets consecutive versions and unsaved feedback on another image is
   await expect(page.locator('.task-media')).toHaveAttribute('aria-busy','false');
   await expect(item(page, 'segunda.png').getByLabel('Número de versión')).toHaveValue('2');
   await expect(item(page, 'tercera.gif').getByLabel('Número de versión')).toHaveValue('3');
-  await expect(item(page, 'base.png').getByLabel('Feedback de la imagen')).toHaveValue('Borrador que se conserva');
+  await expect(item(page, 'base.png').getByLabel('Feedback del archivo')).toHaveValue('Borrador que se conserva');
 });
 
 test('shared loading reads beyond one page of attachment rows', async ({ page }) => {
@@ -218,13 +269,13 @@ test('upload and metadata errors show failure, allow retry, and do not leave a f
 
 test('realtime does not replace unsaved modal fields; fresh attachments appear after closing', async ({ page }) => {
   await setupCloud(page); await upload(page, 'primera.png');
-  await item(page, 'primera.png').getByLabel('Feedback de la imagen').fill('Borrador sin guardar');
+  await item(page, 'primera.png').getByLabel('Feedback del archivo').fill('Borrador sin guardar');
   await page.evaluate(() => {
     const c=window.__cloud, original=c.rows.find(r=>r.kind==='attachment');
     c.rows.push({...original,id:'other-editor',data:{...original.data,id:'other-editor',name:'otra.png',version:2}}); c.notify();
   });
-  await expect(item(page, 'primera.png').getByLabel('Feedback de la imagen')).toHaveValue('Borrador sin guardar');
+  await expect(item(page, 'primera.png').getByLabel('Feedback del archivo')).toHaveValue('Borrador sin guardar');
   await page.getByRole('button', { name:'Cerrar',exact:true }).click();
-  await expect(page.getByRole('button', {name:'2 imágenes · Ver versiones'})).toBeVisible();
+  await expect(page.getByRole('button', {name:'2 archivos · Ver versiones'})).toBeVisible();
   await page.locator('.kb-card').click(); await expect(page.locator('.media-item')).toHaveCount(2);
 });

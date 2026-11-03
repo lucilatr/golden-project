@@ -199,7 +199,7 @@
       return (rows || []).map((r) => ({ ...r.data, id: r.id }));
     },
     async uploadAttachment(file, taskId, id) {
-      const ext = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif" }[file.type];
+      const ext = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif", "video/mp4": "mp4" }[file.type];
       const bucket = CFG.thumbBucket || "tracker-thumbs";
       const path = DOC + "/tasks/" + encodeURIComponent(taskId) + "/" + id + "." + ext;
       const { error } = await this.sb.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type });
@@ -533,7 +533,7 @@
     } else {
       wrap.appendChild(title);
       if ("title" in obj) wrap.appendChild(h("button", { class: "task-media-link", type: "button",
-        onclick: () => openTaskMedia(obj) }, taskMedia(obj).length ? "Imágenes y versiones (" + taskMedia(obj).length + ")" : "＋ Imagen / GIF"));
+        onclick: () => openTaskMedia(obj) }, taskMedia(obj).length ? "Imágenes, GIF y videos (" + taskMedia(obj).length + ")" : "＋ Imagen / GIF / MP4"));
     }
     return wrap;
   }
@@ -664,7 +664,7 @@
     return data.tasks.filter((t) => (!ui.filterDept || t.dept === ui.filterDept) && (!ui.filterPerson || t.assignee === ui.filterPerson));
   }
 
-  /* ---------------- Imágenes y versiones de cada tarea ---------------- */
+  /* ---------------- Imágenes, GIF y videos de cada tarea ---------------- */
   function taskMedia(t) { return Media.items(t, data.attachments); }
   function openTaskMedia(t) {
     openCard(t, false, true);
@@ -676,6 +676,18 @@
       Media.label(item.version) + " · " + (MEDIA_STATUS[item.status] || MEDIA_STATUS.review));
   }
   function mediaPreview(item, cls) {
+    if (item.mime === "video/mp4") {
+      const video = h("video", { class: cls, controls: cls === "media-image", playsinline: true, preload: "metadata",
+        "aria-label": item.name || "Video de la tarea" });
+      video.appendChild(document.createTextNode("Tu navegador no puede reproducir este video. Podés descargarlo para verlo en tu computadora."));
+      video.addEventListener("error", () => {
+        video.classList.add("media-unavailable");
+        video.insertAdjacentElement("afterend", h("p", { class: "media-help", role: "status" }, "No se pudo reproducir el video. Descargalo para verlo en tu computadora."));
+      }, { once: true });
+      Media.source(item).then((url) => { if (url) video.src = url; else video.dispatchEvent(new Event("error")); })
+        .catch(() => video.dispatchEvent(new Event("error")));
+      return video;
+    }
     const img = h("img", { class: cls, alt: item.name || "Imagen de la tarea", loading: "lazy", draggable: "false" });
     img.addEventListener("error", () => { img.alt = "Imagen no disponible · " + (item.name || ""); img.classList.add("media-unavailable"); });
     Media.source(item).then((url) => { if (url) img.src = url; else img.dispatchEvent(new Event("error")); })
@@ -700,8 +712,8 @@
     renderTracker();
   }
   function mediaSection(t) {
-    const section = h("section", { class: "task-media", "aria-label": "Imágenes y versiones" });
-    section.appendChild(h("h3", {}, "Imágenes y versiones"));
+    const section = h("section", { class: "task-media", "aria-label": "Imágenes, GIF y videos" });
+    section.appendChild(h("h3", {}, "Imágenes, GIF y videos"));
     section.appendChild(h("p", { class: "media-help" }, "Verde: final · Naranja: vieja · Cada versión conserva su feedback."));
     const message = h("p", { class: "media-message", role: "status", "aria-live": "polite" });
     const list = h("div", { class: "media-list" });
@@ -738,18 +750,18 @@
     }
     if (ui.editable) {
       const input = h("input", { type: "file", class: "media-file-input", accept: Media.TYPES.join(","), multiple: true,
-        "aria-label": "Elegir imágenes o GIF" });
+        "aria-label": "Elegir imágenes, GIF o MP4" });
       input.addEventListener("change", () => { const files = Array.from(input.files || []); input.value = ""; upload(files); });
-      uploadButton = h("button", { class: "btn-hub accent", type: "button", onclick: () => input.click() }, "＋ Subir imagen o GIF");
+      uploadButton = h("button", { class: "btn-hub accent", type: "button", onclick: () => input.click() }, "＋ Subir imagen, GIF o MP4");
       const drop = h("div", { class: "media-drop" }, [uploadButton, input,
-        h("span", {}, "o arrastrá archivos acá · PNG, JPG, WebP, AVIF y GIF · hasta 50 MB por archivo")]);
+        h("span", {}, "o arrastrá archivos acá · PNG, JPG, WebP, AVIF, GIF y MP4 · hasta 50 MB por archivo")]);
       drop.addEventListener("dragover", (e) => { e.preventDefault(); e.stopPropagation(); if (!busy) drop.classList.add("drop-hover"); });
       drop.addEventListener("dragleave", () => drop.classList.remove("drop-hover"));
       drop.addEventListener("drop", (e) => { e.preventDefault(); e.stopPropagation(); drop.classList.remove("drop-hover"); upload(Array.from(e.dataTransfer.files || [])); });
       section.appendChild(drop);
     } else {
       section.appendChild(h("div", { class: "media-drop media-locked" }, [
-        h("span", {}, "Para subir imágenes o GIF, activá la edición de esta tarjeta."),
+        h("span", {}, "Para subir imágenes, GIF o MP4, activá la edición de esta tarjeta."),
         h("button", { class: "btn-hub accent", type: "button", onclick: async () => {
           await toggleLock();
           if (ui.editable) openCard(t, false, true);
@@ -760,7 +772,7 @@
     function renderImages() {
       list.replaceChildren();
       const items = taskMedia(t).slice().reverse();
-      if (!items.length) list.appendChild(h("p", { class: "media-empty" }, "Todavía no hay imágenes en esta tarea."));
+      if (!items.length) list.appendChild(h("p", { class: "media-empty" }, "Todavía no hay archivos en esta tarea."));
       items.forEach((item) => {
         const article = h("article", { class: "media-item media-" + (MEDIA_STATUS[item.status] ? item.status : "review"), "data-attachment-id": item.id });
         article.appendChild(h("div", { class: "media-item-head" }, [mediaBadge(item), h("span", { class: "media-filename", title: item.name }, item.name)]));
@@ -768,9 +780,9 @@
         if (ui.editable) {
           const draft = drafts.get(item.id) || { version: item.version, status: item.status, feedback: item.feedback || "" };
           const version = h("input", { type: "number", class: "cell-edit", min: "1", step: "1", "aria-label": "Número de versión" }); version.value = draft.version;
-          const status = h("select", { class: "cell-edit", "aria-label": "Estado de la imagen" });
+          const status = h("select", { class: "cell-edit", "aria-label": "Estado del archivo" });
           Object.entries(MEDIA_STATUS).forEach(([value, text]) => { const option = h("option", { value }, text); option.selected = draft.status === value; status.appendChild(option); });
-          const feedback = h("textarea", { class: "media-feedback", rows: "3", maxlength: "300", "aria-label": "Feedback de la imagen", placeholder: "Feedback para esta versión (máx. 300 caracteres)…" }); feedback.value = Media.feedback(draft.feedback);
+          const feedback = h("textarea", { class: "media-feedback", rows: "3", maxlength: "300", "aria-label": "Feedback del archivo", placeholder: "Feedback para esta versión (máx. 300 caracteres)…" }); feedback.value = Media.feedback(draft.feedback);
           const count = h("span", { class: "media-count", "aria-live": "polite" }, feedback.value.length + "/300");
           const remember = () => { feedback.value = Media.feedback(feedback.value); count.textContent = feedback.value.length + "/300";
             drafts.set(item.id, { version: version.value, status: status.value, feedback: feedback.value }); };
@@ -840,7 +852,7 @@
       }
       card.appendChild(h("button", { class: "task-media-link", type: "button", onclick: (e) => {
         e.stopPropagation(); openTaskMedia(t);
-      } }, images.length ? images.length + (images.length === 1 ? " imagen · Ver versiones" : " imágenes · Ver versiones") : "＋ Imagen / GIF"));
+      } }, images.length ? images.length + (images.length === 1 ? " archivo · Ver versiones" : " archivos · Ver versiones") : "＋ Imagen / GIF / MP4"));
       if (ui.editable) {
         card.setAttribute("draggable", "true");
         card.addEventListener("dragstart", (e) => { dragId = t.id; card.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", t.id); } catch (x) {} });
