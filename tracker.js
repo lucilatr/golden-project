@@ -304,6 +304,7 @@
   const TABS = [
     { id: "resumen", label: "◱ Resumen" },
     { id: "script",  label: "♪ Script", done: true },
+    { id: "guion",   label: "☰ Guion" },
     { id: "tracker", label: "▦ Tracker" },
     { id: "cal",     label: "▤ Calendario" },
     { id: "guia",    label: "⎙ Guía de testeo", done: true },
@@ -320,6 +321,7 @@
   }
   function show(view) {
     ui.view = view;
+    if (view !== "guion" && window.GoldenGuion) window.GoldenGuion.stop();
     document.querySelectorAll(".hub-view").forEach((v) => v.classList.remove("active"));
     const sec = el("view-" + view); if (sec) sec.classList.add("active");
     renderTabs();
@@ -331,6 +333,7 @@
     if (ui.view === "resumen") renderResumen();
     else if (ui.view === "tracker") renderTracker();
     else if (ui.view === "cal") renderCal();
+    else if (ui.view === "guion" && window.GoldenGuion) window.GoldenGuion.render();
   }
 
   /* ============================================================
@@ -1107,6 +1110,6 @@
     data = seed(); saveLocal();
   }
 
-  window.GoldenHub = { show };
+  window.GoldenHub = { show, editable };
   document.addEventListener("DOMContentLoaded", boot);
 })();
