@@ -1,5 +1,5 @@
 /* ============================================================
-   GOLDEN — Guion por set (Maquetado v14)
+   GOLDEN — Guion por set (00:00–00:25 apertura nueva, resto v14)
    In/Out, letra y set son fijos (ROWS). Cámara, Acción y UI se
    escriben acá: una fila por celda en doc_meta de Supabase, con
    prefijo en el id (el Script solo usa la fila con id = docId), o
@@ -25,9 +25,10 @@
     C: { label: "Etapa 3 · Consagración dorada", color: "var(--st-golden)" },
   };
   const ROWS = [
-    {"id": "r0000", "stage": "A", "in": 0.0, "out": 9.6, "set": "S01 · Seúl, calle Hanok (cenital)", "desc": "Plano aéreo de techos, cerezos y pósters de HUNTR/X. Rumi chiquita caminando. Título \"GOLDEN · Street Scenario · Seoul\".", "lyric": []},
-    {"id": "r0096", "stage": "A", "in": 9.6, "out": 16.0, "set": "S02 · Seúl, calle Hanok (a nivel calle)", "desc": "Día. Farolitos, cerezos, pétalos cayendo. Rumi camina hacia cámara.", "lyric": []},
-    {"id": "r0160", "stage": "A", "in": 16.0, "out": 23.1, "set": "S02 · Seúl, calle Hanok (cont.)", "desc": "Misma calle. Arranca la voz.", "lyric": [["00:16", "I was a ghost, I was alone"], ["≈00:20", "eoduwojin apgil soge"]]},
+    {"id": "r0000", "stage": "A", "in": 0.0, "out": 9.3, "set": "S01 · Seúl, calle Hanok (aéreo)", "desc": "Plano aéreo que avanza lento sobre techos, cerezos y cartel de HUNTR/X, y gira hasta alinear la calle en vertical. Rumi muy chica, abajo. El título GOLDEN entra con fundido (~00:00.7 a 00:01.3). En la maqueta hay un salto de encuadre en 00:04.5.", "lyric": []},
+    // Conserva el id r0096 de la fila 00:09.6 de la v14: Cámara ya tiene texto escrito bajo ese id.
+    {"id": "r0096", "stage": "A", "in": 9.3, "out": 16.0, "set": "S02 · Seúl, calle Hanok (a nivel calle)", "desc": "Corte a la calle: la cámara baja desde la altura de los techos y avanza, con Rumi muy lejos al fondo. El título se va con fundido (~00:12.4 a 00:13.1). Desde 00:13.0 acelera con barrido hasta quedar frente a Rumi (~00:13.8); entran los pétalos y la cámara retrocede mientras Rumi camina hacia ella.", "lyric": []},
+    {"id": "r0160", "stage": "A", "in": 16.0, "out": 23.1, "set": "S02 · Seúl, calle Hanok (cont.)", "desc": "Misma calle. La cámara sigue retrocediendo frente a Rumi. Arranca la voz.", "lyric": [["00:16", "I was a ghost, I was alone"], ["≈00:20", "eoduwojin apgil soge"]]},
     {"id": "r0231", "stage": "A", "in": 23.1, "out": 28.2, "set": "S03 · Close-up, bokeh magenta", "desc": "Rumi de cintura para arriba, fondo de luces rosas desenfocadas. Sale con fundido al oscuro.", "lyric": [["00:24", "Given the throne, I didn't know how to believe"]]},
     {"id": "r0282", "stage": "A", "in": 28.2, "out": 30.8, "set": "S02 · Calle Hanok → entrada al callejón", "desc": "Vuelve a la calle; aparecen muro de ladrillos y póster en primer plano. Sale con flash blanco.", "lyric": [["00:28", "I was the queen that I'm meant to be"]]},
     {"id": "r0308", "stage": "A", "in": 30.8, "out": 38.4, "set": "S04 · Pasarela, alfombra roja", "desc": "Escaleras blancas, público con flashes. Pantalla gigante con palabras (TIME, FEARS, LIES). Arranca cerca y se abre a plano general (~00:32).", "lyric": [["00:31", "I lived two lives, tried to play both sides"], ["00:35", "But I couldn't find my own place"]]},
@@ -130,6 +131,42 @@
   }
   window.addEventListener("pagehide", flush);
 
+  /* ---------------- Video por tramo ---------------- */
+  const clip = { video: null };
+  function stopClip() {
+    const v = clip.video;
+    if (!v) return;
+    clip.video = null;
+    v.pause();
+    v.remove();
+  }
+  function playClip(r, box) {
+    stopPlayer();
+    stopClip();
+    const v = h("video");
+    v.src = "guion-assets/" + r.id + ".mp4";
+    v.poster = "guion-assets/" + r.id + ".jpg";
+    v.controls = true;
+    v.playsInline = true;
+    v.setAttribute("aria-label", "Video " + fmt(r.in) + " a " + fmt(r.out));
+    v.addEventListener("ended", stopClip);
+    v.addEventListener("error", () => {
+      setStatus("No se pudo cargar el video", true);
+      stopClip();
+    });
+    box.appendChild(v);
+    clip.video = v;
+    v.play().catch((e) => {
+      if (e && e.name === "AbortError") return;
+      setStatus("No se pudo reproducir el video", true);
+      stopClip();
+    });
+  }
+  function stopAll() {
+    stopPlayer();
+    stopClip();
+  }
+
   /* ---------------- Audio por tramo ---------------- */
   const player = { audio: null, row: null, timer: 0 };
   function paintPlayer() {
@@ -168,6 +205,7 @@
     });
   }
   function toggleRow(r) {
+    stopClip();
     if (!player.audio) {
       player.audio = new Audio(SONG);
       player.audio.preload = "auto";
@@ -231,11 +269,19 @@
   }
   function setCell(r) {
     const td = h("td", "g-set");
+    const box = h("div", "g-clip");
+    const btn = h("button", "g-thumb");
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Ver video " + fmt(r.in) + " a " + fmt(r.out));
+    btn.addEventListener("click", () => playClip(r, box));
     const img = h("img");
     img.src = "guion-assets/" + r.id + ".jpg";
     img.alt = r.set;
     img.loading = "lazy";
-    td.appendChild(img);
+    btn.appendChild(img);
+    btn.appendChild(h("span", "", "▶\uFE0E"));
+    box.appendChild(btn);
+    td.appendChild(box);
     td.appendChild(h("strong", "", r.set));
     td.appendChild(h("p", "", r.desc));
     return td;
@@ -261,7 +307,7 @@
     host.innerHTML = "";
     const bar = h("div", "g-bar");
     const title = h("div");
-    title.appendChild(h("h2", "sec", "Guion por set · Maquetado v14"));
+    title.appendChild(h("h2", "sec", "Guion por set · Apertura nueva + Maquetado v14"));
     title.appendChild(h("div", "g-note", editable
       ? "Cámara, Acción y UI se guardan solas mientras escribís."
       : "Para escribir, tocá 🔒 Editar arriba a la derecha."));
@@ -317,10 +363,10 @@
       return;
     }
     flush();
-    stopPlayer();
+    stopAll();
     builtFor = editable;
     build(host, editable);
   }
 
-  window.GoldenGuion = { render, stop: stopPlayer };
+  window.GoldenGuion = { render, stop: stopAll };
 })();
