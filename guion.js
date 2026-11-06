@@ -1,8 +1,9 @@
 /* ============================================================
    GOLDEN — Guion por set (Maquetado v14)
    In/Out, letra y set son fijos (ROWS). Cámara, Acción y UI se
-   escriben acá: una fila por celda en Supabase (guion_cells), o
-   localStorage si la tabla todavía no existe.
+   escriben acá: una fila por celda en doc_meta de Supabase, con
+   prefijo en el id (el Script solo usa la fila con id = docId), o
+   localStorage si no hay conexión.
    ============================================================ */
 (function () {
   "use strict";
@@ -10,7 +11,8 @@
   const CFG = window.GOLDEN_CONFIG || {};
   const DOC = CFG.docId || "golden";
   const LS_KEY = "golden_guion_v1";
-  const TABLE = "guion_cells";
+  const TABLE = "doc_meta";
+  const PREFIX = DOC + ":guion:";
   const SONG = "clips/song.m4a";
   const FIELDS = [
     { id: "camera", label: "Cámara", hint: "Escribir cámara…" },
@@ -74,8 +76,7 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(cells)); } catch (e) {}
   }
   function cellRow(key, text) {
-    const p = key.split(":");
-    return { id: DOC + ":" + key, doc_id: DOC, row_id: p[0], field: p[1], text };
+    return { id: PREFIX + key, data: { text } };
   }
   async function load() {
     const local = readLocal();
@@ -83,10 +84,10 @@
     if (!CFG.supabaseUrl || !CFG.supabaseAnonKey || typeof window.supabase === "undefined") return;
     try {
       sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
-      const { data, error } = await sb.from(TABLE).select("row_id,field,text").eq("doc_id", DOC);
+      const { data, error } = await sb.from(TABLE).select("id,data").like("id", PREFIX + "%");
       if (error) throw error;
       const remote = {};
-      (data || []).forEach((r) => { remote[r.row_id + ":" + r.field] = r.text; });
+      (data || []).forEach((r) => { remote[r.id.slice(PREFIX.length)] = (r.data && r.data.text) || ""; });
       // Lo escrito en modo local que todavía no está en la base se sube (sin pisar nada)
       const pending = Object.keys(local).filter((k) => local[k] && !remote[k]);
       if (pending.length) {
@@ -98,18 +99,19 @@
       cells = remote;
       online = true;
       sb.channel("rt-guion")
-        .on("postgres_changes", { event: "*", schema: "public", table: TABLE, filter: "doc_id=eq." + DOC }, onRemote)
+        .on("postgres_changes", { event: "*", schema: "public", table: TABLE }, onRemote)
         .subscribe();
     } catch (e) { online = false; }
   }
   function onRemote(p) {
-    const r = p.new && p.new.row_id ? p.new : null;
-    if (!r) return;
-    const key = r.row_id + ":" + r.field;
+    const r = p.new;
+    if (!r || !r.id || r.id.indexOf(PREFIX) !== 0) return;
+    const key = r.id.slice(PREFIX.length);
     if (timers[key]) return; // hay un cambio propio sin guardar en esta celda
-    cells[key] = r.text;
+    const text = (r.data && r.data.text) || "";
+    cells[key] = text;
     const ta = document.querySelector('#view-guion textarea[data-key="' + key + '"]');
-    if (ta && ta !== document.activeElement) { ta.value = r.text; grow(ta); }
+    if (ta && ta !== document.activeElement) { ta.value = text; grow(ta); }
   }
   function save(key) {
     delete timers[key];
