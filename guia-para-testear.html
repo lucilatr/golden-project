@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guía — Conectarse a la VPN de Netflix y testear un build</title>
+<script>try { if (localStorage.getItem("golden_theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
 <style>
   :root{
     --bg:#0e1016; --bg-2:#151824; --bg-3:#1b1f2e; --line:#2a3042; --line-2:#363d52;
@@ -12,6 +13,15 @@
     --radius:14px; --radius-s:9px;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;
     --mono:"SF Mono","JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    --ok:#5fcf80; --ok-line:#2e5e3e; --tip:#e8cf9a;
+    color-scheme:dark;
+  }
+  html[data-theme="light"]{
+    --bg:#f6f4ee; --bg-2:#ffffff; --bg-3:#efece4; --line:#e2ddd0; --line-2:#cfc8b8;
+    --text:#1d1f27; --text-2:#525769; --text-dim:#686d7d;
+    --accent-2:#b00610; --gold:#8a5f0a;
+    --ok:#1f8a50; --ok-line:#a5cdbd; --tip:#6b4c0c;
+    color-scheme:light;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -64,10 +74,10 @@
   .copy{border:1px solid var(--line-2);background:var(--bg-2);color:var(--text-2);
     border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;font-family:var(--sans)}
   .copy:hover{color:var(--text);border-color:var(--text-dim)}
-  .copy.ok{color:#5fcf80;border-color:#2e5e3e}
+  .copy.ok{color:var(--ok);border-color:var(--ok-line)}
 
   .tip{display:flex;gap:9px;background:rgba(217,164,65,.08);border:1px solid rgba(217,164,65,.3);
-    border-radius:var(--radius-s);padding:9px 12px;margin:10px 0 0;font-size:13px;color:#e8cf9a}
+    border-radius:var(--radius-s);padding:9px 12px;margin:10px 0 0;font-size:13px;color:var(--tip)}
   .tip b{color:var(--gold)}
 
   footer.end{text-align:center;color:var(--text-dim);font-size:13px;margin-top:30px}

@@ -1,0 +1,23 @@
+[
+ {
+  "id": "meta",
+  "doc_id": "golden",
+  "kind": "meta",
+  "pos": 0,
+  "data": {
+   "weekDate": "Semana del 20 al 24 oct",
+   "weekPlans": {
+    "2026-10-12": "",
+    "2026-10-19": "",
+    "2026-10-26": "Updated editing tool\nWalk Animation v1\nNew environments\nNew ui interactions\nVisual improvements",
+    "2026-11-02": "Additional scenarios\nNew opening with the logo and a fly-through camera move\nInteractive character animations\nInteractive live scenarios",
+    "2026-12-14": ""
+   },
+   "calendarUrl": "",
+   "deliveryDate": "Viernes 27 oct 2026",
+   "weekObjective": "",
+   "deliveryObjective": "DIFERENTES SONIDOS DE HIT OR MISS\nNOTES EDITOR ONLINE\nMAS LARGA LA VERSION\nTAP CON CÍRCULOS"
+  },
+  "updated_at": "2026-10-21T16:58:51.999929+00:00"
+ }
+]

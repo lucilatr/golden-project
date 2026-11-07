@@ -27,28 +27,27 @@
   const ROWS = [
     {"id": "r0000", "stage": "A", "in": 0.0, "out": 9.3, "set": "S01 · Seúl, calle Hanok (aéreo)", "desc": "Plano aéreo que avanza lento sobre techos, cerezos y cartel de HUNTR/X, y gira hasta alinear la calle en vertical. Rumi muy chica, abajo. El título GOLDEN entra con fundido (~00:00.7 a 00:01.3). En la maqueta hay un salto de encuadre en 00:04.5.", "lyric": []},
     // Conserva el id r0096 de la fila 00:09.6 de la v14: Cámara ya tiene texto escrito bajo ese id.
-    {"id": "r0096", "stage": "A", "in": 9.3, "out": 16.0, "set": "S02 · Seúl, calle Hanok (a nivel calle)", "desc": "Corte a la calle: la cámara baja desde la altura de los techos y avanza, con Rumi muy lejos al fondo. El título se va con fundido (~00:12.4 a 00:13.1). Desde 00:13.0 acelera con barrido hasta quedar frente a Rumi (~00:13.8); entran los pétalos y la cámara retrocede mientras Rumi camina hacia ella.", "lyric": []},
-    {"id": "r0160", "stage": "A", "in": 16.0, "out": 23.1, "set": "S02 · Seúl, calle Hanok (cont.)", "desc": "Misma calle. La cámara sigue retrocediendo frente a Rumi. Arranca la voz.", "lyric": [["00:16", "I was a ghost, I was alone"], ["≈00:20", "eoduwojin apgil soge"]]},
-    {"id": "r0231", "stage": "A", "in": 23.1, "out": 28.2, "set": "S03 · Close-up, bokeh magenta", "desc": "Rumi de cintura para arriba, fondo de luces rosas desenfocadas. Sale con fundido al oscuro.", "lyric": [["00:24", "Given the throne, I didn't know how to believe"]]},
-    {"id": "r0282", "stage": "A", "in": 28.2, "out": 30.8, "set": "S02 · Calle Hanok → entrada al callejón", "desc": "Vuelve a la calle; aparecen muro de ladrillos y póster en primer plano. Sale con flash blanco.", "lyric": [["00:28", "I was the queen that I'm meant to be"]]},
-    {"id": "r0308", "stage": "A", "in": 30.8, "out": 38.4, "set": "S04 · Pasarela, alfombra roja", "desc": "Escaleras blancas, público con flashes. Pantalla gigante con palabras (TIME, FEARS, LIES). Arranca cerca y se abre a plano general (~00:32).", "lyric": [["00:31", "I lived two lives, tried to play both sides"], ["00:35", "But I couldn't find my own place"]]},
-    {"id": "r0384", "stage": "A", "in": 38.4, "out": 43.1, "set": "S05 · Close-up, bokeh callejón", "desc": "Fondo cálido desenfocado. Desde 00:40.0, comentarios de redes sobre pantalla (\"LIKE I'M BORN TO BE\").", "lyric": [["00:39", "Called a problem child 'cause I got too wild"]]},
-    {"id": "r0431", "stage": "A", "in": 43.1, "out": 46.5, "set": "S06 · Callejón de ladrillos con pósters", "desc": "Pasillo angosto lleno de pósters. Desde ~00:45.3 acerca hasta el pecho y corta con flash.", "lyric": [["00:43", "But now that's how I'm getting paid 끝없이 on stage"]]},
-    {"id": "r0465", "stage": "B", "in": 46.5, "out": 54.6, "set": "S07 · Subte, de día", "desc": "Vagón con sillones azules, ventanas con skyline y río, valija y objetos en el piso. Cámara se mueve dentro del vagón.", "lyric": [["00:47", "I'm done hidin', now I'm shinin'"], ["00:51", "Like I'm born to be"]]},
-    {"id": "r0546", "stage": "B", "in": 54.6, "out": 62.4, "set": "S08 · Subte, modo demon", "desc": "Mismo vagón, cambio por corte: oscuro violeta, venas en ventanas, rayos en el piso, Rumi con luz roja.", "lyric": [["00:54", "We dreamin' hard, we came so far"], ["00:58", "Now I believe"]]},
-    {"id": "r0624", "stage": "B", "in": 62.4, "out": 70.1, "set": "S09 · Cielo sobre Seúl, ascenso", "desc": "Entra con flash blanco. Rumi flotando, ciudad abajo, cielo rosa. \"Up up up · rompe el techo y sube\". HUD + interfaz Z en maqueta.", "lyric": [["01:02", "We're goin' up, up, up, it's our moment"], ["01:05", "You know together we're glowin'"], ["01:07", "Gonna be, gonna be golden"]]},
-    {"id": "r0701", "stage": "B", "in": 70.1, "out": 78.2, "set": "S10 · Cielo violeta, giro y combate", "desc": "Disolvencia. Rumi girando en el aire con espada, demonios alrededor. \"Gira en el aire y mata demonios\". HUD + interfaz Z en maqueta.", "lyric": [["01:09", "Oh-oh-oh, up, up, up with our voices"], ["01:13", "yeongwonhi kkaejil su eomneun"], ["01:15", "Gonna be, gonna be golden"]]},
-    {"id": "r0782", "stage": "B", "in": 78.2, "out": 84.9, "set": "S11 · Vórtice de energía, vuelo", "desc": "Disolvencia. Close de Rumi volando de frente entre aros de luz. \"Vuela hacia el camino de cristal\". HUD + interfaz Z en maqueta.", "lyric": [["01:18", "Oh-oh-oh, I'm done hidin', now I'm shinin'"], ["01:22", "Like I'm born to be"]]},
-    {"id": "r0849", "stage": "B", "in": 84.9, "out": 94.9, "set": "S12 · Camino de cristal sobre nubes", "desc": "Rumi de espaldas avanzando, cielo de atardecer, demonios volando en silueta. Sin HUD.", "lyric": [["01:26", "Oh, our time, no fears, no lies"], ["01:29", "That's who we're born to be"]]},
-    {"id": "r0949", "stage": "B", "in": 94.9, "out": 107.0, "set": "S13 · Desierto de roca, atardecer", "desc": "Suelo agrietado, formaciones rocosas de fondo, sol bajo. Rumi camina hacia cámara. Sin HUD.", "lyric": [["01:35", "Waited so long to break these walls down"], ["01:39", "To wake up and feel like me"], ["01:43", "Put these patterns all in the past now"]]},
-    {"id": "r1070", "stage": "B", "in": 107.0, "out": 111.9, "set": "S14 · Paredes de roca, cañón", "desc": "Mismo desierto: suben paredes con polvo (desde 01:47.0) y la encierran hasta dejar una rendija de cielo.", "lyric": [["01:47", "And finally live like the girl they all see"]]},
-    {"id": "r1119", "stage": "B", "in": 111.9, "out": 123.1, "set": "S15 · Espacio abstracto en colapso", "desc": "Ruinas flotando, tonos violetas, eclipse arriba. Rumi de espaldas, con espada. \"No more hiding · el espacio se deforma y colapsa\". HUD + interfaz Z en maqueta.", "lyric": [["01:52", "No more hiding, I'll be shinin'"], ["01:56", "Like I'm born to be"], ["01:59", "'Cause we are hunters, voices strong"]]},
-    {"id": "r1231", "stage": "B", "in": 123.1, "out": 127.0, "set": "S16 · Explosión de oro", "desc": "Disolvencia. Rumi de espaldas, brazos abiertos, ráfagas doradas. \"Todo se vuelve oro\". HUD + interfaz Z en maqueta.", "lyric": [["02:04", "And I know I believe"]]},
-    {"id": "r1270", "stage": "C", "in": 127.0, "out": 138.1, "set": "S16 · Explosión de oro (cont.)", "desc": "Mismo plano; entra el estribillo. HUD + interfaz Z en maqueta.", "lyric": [["02:07", "We're goin' up, up, up, it's our moment"], ["02:11", "You know together we're glowin'"], ["02:13", "Gonna be, gonna be golden"], ["≈02:14", "Oh-oh-oh, up, up, up with our voices"]]},
-    {"id": "r1381", "stage": "C", "in": 138.1, "out": 150.2, "set": "S17 · Escenario de oro, combate", "desc": "Disolvencia. Escalinata dorada, pantallas con Rumi, demonios estallando; Rumi con espada. \"Combate de espadas · cada demonio arma el escenario\". HUD + interfaz Z en maqueta.", "lyric": [["≈02:18", "yeongwonhi kkaejil su eomneun"], ["≈02:20", "Gonna be, gonna be golden"], ["≈02:22", "Oh-oh-oh, I'm done hidin', now I'm shinin'"], ["≈02:27", "Like I'm born to be"]]},
-    {"id": "r1502", "stage": "C", "in": 150.2, "out": 159.9, "set": "S17 · Escenario de oro, combate (cont.)", "desc": "Mismo plano. HUD + interfaz Z en maqueta.", "lyric": [["≈02:30", "Oh, our time, no fears, no lies"], ["≈02:35", "That's who we're born to be"], ["≈02:38", "You know we're gonna be, gonna be golden"]]},
-    {"id": "r1599", "stage": "C", "in": 159.9, "out": 175.0, "set": "S18 · Mega estadio", "desc": "Entra con flash blanco. Escenario monumental dorado, pantallas, láseres, público masivo. Zoom out lento. Sin HUD.", "lyric": [["≈02:41", "We're gonna be, gonna be"], ["≈02:42", "Born to be, born to be glowin'"], ["≈02:45", "You know that it's our time, no fears, no lies"], ["≈02:51", "That's who we're born to be"]]},
-    {"id": "r1750", "stage": "C", "in": 175.0, "out": 194.6, "set": "S18 · Mega estadio (cont.)", "desc": "Sigue el zoom out hasta el final. La música se apaga ~03:11. Sin HUD.", "lyric": []},
+    {"id": "r0096", "stage": "A", "in": 9.3, "out": 16.0, "set": "S01 · Seúl, calle Hanok (a nivel calle)", "desc": "Corte a la calle: la cámara baja desde la altura de los techos y avanza, con Rumi muy lejos al fondo. El título se va con fundido (~00:12.4 a 00:13.1). Desde 00:13.0 acelera con barrido hasta quedar frente a Rumi (~00:13.8); entran los pétalos y la cámara retrocede mientras Rumi camina hacia ella.", "lyric": []},
+    {"id": "r0160", "stage": "A", "in": 16.0, "out": 23.1, "set": "S01 · Seúl, calle Hanok (cont.)", "desc": "Misma calle. La cámara sigue retrocediendo frente a Rumi. Arranca la voz.", "lyric": [["00:16", "I was a ghost, I was alone"], ["≈00:20", "eoduwojin apgil soge"]]},
+    // Une 00:23.1 y 00:28.2: conserva el id r0231 y su video incluye los dos tramos.
+    {"id": "r0231", "stage": "A", "in": 23.1, "out": 30.8, "set": "S01 · Close-up, bokeh magenta + Calle Hanok → entrada al callejón", "desc": "Rumi de cintura para arriba, fondo de luces rosas desenfocadas. Sale con fundido al oscuro.\nDesde 00:28.2: vuelve a la calle; aparecen muro de ladrillos y póster en primer plano. Sale con flash blanco.", "lyric": [["00:24", "Given the throne, I didn't know how to believe"], ["00:28", "I was the queen that I'm meant to be"]]},
+    // Une 00:30.8, 00:38.4 y 00:43.1: conserva el id r0308 y su video incluye los tres tramos.
+    {"id": "r0308", "stage": "A", "in": 30.8, "out": 46.5, "set": "S02 · Pasarela, alfombra roja + Close-up, bokeh callejón + Callejón de ladrillos con pósters", "desc": "Escaleras blancas, público con flashes. Pantalla gigante con palabras (TIME, FEARS, LIES). Arranca cerca y se abre a plano general (~00:32).\nDesde 00:38.4: fondo cálido desenfocado. Desde 00:40.0, comentarios de redes sobre pantalla (\"LIKE I'M BORN TO BE\").\nDesde 00:43.1: pasillo angosto lleno de pósters. Desde ~00:45.3 acerca hasta el pecho y corta con flash.", "lyric": [["00:31", "I lived two lives, tried to play both sides"], ["00:35", "But I couldn't find my own place"], ["00:39", "Called a problem child 'cause I got too wild"], ["00:43", "But now that's how I'm getting paid 끝없이 on stage"]]},
+    {"id": "r0465", "stage": "B", "in": 46.5, "out": 54.6, "set": "S03 · Subte, de día", "desc": "Vagón con sillones azules, ventanas con skyline y río, valija y objetos en el piso. Cámara se mueve dentro del vagón.", "lyric": [["00:47", "I'm done hidin', now I'm shinin'"], ["00:51", "Like I'm born to be"]]},
+    {"id": "r0546", "stage": "B", "in": 54.6, "out": 62.4, "set": "S03 · Subte, modo demon", "desc": "Mismo vagón, cambio por corte: oscuro violeta, venas en ventanas, rayos en el piso, Rumi con luz roja.", "lyric": [["00:54", "We dreamin' hard, we came so far"], ["00:58", "Now I believe"]]},
+    {"id": "r0624", "stage": "B", "in": 62.4, "out": 70.1, "set": "S04 · Cielo sobre Seúl, ascenso", "desc": "Entra con flash blanco. Rumi flotando, ciudad abajo, cielo rosa. \"Up up up · rompe el techo y sube\". HUD + interfaz Z en maqueta.", "lyric": [["01:02", "We're goin' up, up, up, it's our moment"], ["01:05", "You know together we're glowin'"], ["01:07", "Gonna be, gonna be golden"]]},
+    {"id": "r0701", "stage": "B", "in": 70.1, "out": 78.2, "set": "S04 · Cielo violeta, giro y combate", "desc": "Disolvencia. Rumi girando en el aire con espada, demonios alrededor. \"Gira en el aire y mata demonios\". HUD + interfaz Z en maqueta.", "lyric": [["01:09", "Oh-oh-oh, up, up, up with our voices"], ["01:13", "yeongwonhi kkaejil su eomneun"], ["01:15", "Gonna be, gonna be golden"]]},
+    {"id": "r0782", "stage": "B", "in": 78.2, "out": 84.9, "set": "S04 · Vórtice de energía, vuelo", "desc": "Disolvencia. Close de Rumi volando de frente entre aros de luz. \"Vuela hacia el camino de cristal\". HUD + interfaz Z en maqueta.", "lyric": [["01:18", "Oh-oh-oh, I'm done hidin', now I'm shinin'"], ["01:22", "Like I'm born to be"]]},
+    {"id": "r0849", "stage": "B", "in": 84.9, "out": 94.9, "set": "S05 · Camino de cristal sobre nubes", "desc": "Rumi de espaldas avanzando, cielo de atardecer, demonios volando en silueta. Sin HUD.", "lyric": [["01:26", "Oh, our time, no fears, no lies"], ["01:29", "That's who we're born to be"]]},
+    {"id": "r0949", "stage": "B", "in": 94.9, "out": 107.0, "set": "S06 · Desierto de roca, atardecer", "desc": "Suelo agrietado, formaciones rocosas de fondo, sol bajo. Rumi camina hacia cámara. Sin HUD.", "lyric": [["01:35", "Waited so long to break these walls down"], ["01:39", "To wake up and feel like me"], ["01:43", "Put these patterns all in the past now"]]},
+    {"id": "r1070", "stage": "B", "in": 107.0, "out": 111.9, "set": "S06 · Paredes de roca, cañón", "desc": "Mismo desierto: suben paredes con polvo (desde 01:47.0) y la encierran hasta dejar una rendija de cielo.", "lyric": [["01:47", "And finally live like the girl they all see"]]},
+    {"id": "r1119", "stage": "B", "in": 111.9, "out": 123.1, "set": "S07 · Espacio abstracto en colapso", "desc": "Ruinas flotando, tonos violetas, eclipse arriba. Rumi de espaldas, con espada. \"No more hiding · el espacio se deforma y colapsa\". HUD + interfaz Z en maqueta.", "lyric": [["01:52", "No more hiding, I'll be shinin'"], ["01:56", "Like I'm born to be"], ["01:59", "'Cause we are hunters, voices strong"]]},
+    {"id": "r1231", "stage": "B", "in": 123.1, "out": 127.0, "set": "S08 · Explosión de oro", "desc": "Disolvencia. Rumi de espaldas, brazos abiertos, ráfagas doradas. \"Todo se vuelve oro\". HUD + interfaz Z en maqueta.", "lyric": [["02:04", "And I know I believe"]]},
+    {"id": "r1270", "stage": "C", "in": 127.0, "out": 138.1, "set": "S08 · Explosión de oro (cont.)", "desc": "Mismo plano; entra el estribillo. HUD + interfaz Z en maqueta.", "lyric": [["02:07", "We're goin' up, up, up, it's our moment"], ["02:11", "You know together we're glowin'"], ["02:13", "Gonna be, gonna be golden"], ["≈02:14", "Oh-oh-oh, up, up, up with our voices"]]},
+    {"id": "r1381", "stage": "C", "in": 138.1, "out": 150.2, "set": "S09 · Escenario de oro, combate", "desc": "Disolvencia. Escalinata dorada, pantallas con Rumi, demonios estallando; Rumi con espada. \"Combate de espadas · cada demonio arma el escenario\". HUD + interfaz Z en maqueta.", "lyric": [["≈02:18", "yeongwonhi kkaejil su eomneun"], ["≈02:20", "Gonna be, gonna be golden"], ["≈02:22", "Oh-oh-oh, I'm done hidin', now I'm shinin'"], ["≈02:27", "Like I'm born to be"]]},
+    {"id": "r1502", "stage": "C", "in": 150.2, "out": 159.9, "set": "S09 · Escenario de oro, combate (cont.)", "desc": "Mismo plano. HUD + interfaz Z en maqueta.", "lyric": [["≈02:30", "Oh, our time, no fears, no lies"], ["≈02:35", "That's who we're born to be"], ["≈02:38", "You know we're gonna be, gonna be golden"]]},
+    {"id": "r1599", "stage": "C", "in": 159.9, "out": 175.0, "set": "S10 · Mega estadio", "desc": "Entra con flash blanco. Escenario monumental dorado, pantallas, láseres, público masivo. Zoom out lento. Sin HUD.", "lyric": [["≈02:41", "We're gonna be, gonna be"], ["≈02:42", "Born to be, born to be glowin'"], ["≈02:45", "You know that it's our time, no fears, no lies"], ["≈02:51", "That's who we're born to be"]]},
+    {"id": "r1750", "stage": "C", "in": 175.0, "out": 194.6, "set": "S10 · Mega estadio (cont.)", "desc": "Sigue el zoom out hasta el final. La música se apaga ~03:11. Sin HUD.", "lyric": []},
   ];
 
   /* ---------------- Estado ---------------- */
@@ -233,7 +232,24 @@
     const s = el("guion-status");
     if (s) { s.textContent = msg; s.classList.toggle("bad", !!bad); }
   }
+  // Lo pendiente: desde una línea "PARA DEFINIR" hasta el final, o una línea suelta con "DEFINIR".
+  function markPending(text) {
+    let open = false;
+    return text.split("\n").map((line) => {
+      if (line.includes("PARA DEFINIR")) open = true;
+      return { line, pending: open || line.includes("DEFINIR") };
+    });
+  }
+  function paintPending(ta) {
+    const mirror = ta.previousElementSibling;
+    mirror.textContent = "";
+    markPending(ta.value).forEach((m, i) => {
+      if (i) mirror.appendChild(document.createTextNode("\n"));
+      mirror.appendChild(m.pending ? h("span", "g-pending", m.line) : document.createTextNode(m.line));
+    });
+  }
   function grow(ta) {
+    paintPending(ta);
     if (!ta.offsetParent) return;
     ta.style.height = "auto";
     ta.style.height = ta.scrollHeight + 2 + "px";
@@ -300,7 +316,12 @@
       ta.addEventListener("input", () => { cells[key] = ta.value; grow(ta); schedule(key); });
       td.addEventListener("click", () => ta.focus());
     }
-    td.appendChild(ta);
+    const field = h("div", "g-field");
+    const mirror = h("div", "g-mirror");
+    mirror.setAttribute("aria-hidden", "true");
+    field.appendChild(mirror);
+    field.appendChild(ta);
+    td.appendChild(field);
     return td;
   }
   function build(host, editable) {
@@ -368,5 +389,28 @@
     build(host, editable);
   }
 
-  window.GoldenGuion = { render, stop: stopAll };
+  /* ---------------- Para la sección Dirección ---------------- */
+  async function pending() {
+    if (!ready) ready = load();
+    await ready;
+    return ROWS.map((r) => ({
+      id: r.id,
+      time: fmt(r.in) + " – " + fmt(r.out),
+      set: r.set,
+      fields: FIELDS.map((f) => ({
+        label: f.label,
+        items: markPending(cells[r.id + ":" + f.id] || "")
+          .filter((m) => m.pending && m.line.trim() !== "PARA DEFINIR" && m.line.trim())
+          .map((m) => m.line.trim().replace(/^-\s*/, "")),
+      })).filter((f) => f.items.length),
+    })).filter((b) => b.fields.length);
+  }
+  async function reveal(id) {
+    window.GoldenHub.show("guion");
+    await render();
+    const tr = document.querySelector('#view-guion tr[data-row="' + id + '"]');
+    if (tr) tr.scrollIntoView({ block: "center" });
+  }
+
+  window.GoldenGuion = { render, stop: stopAll, pending, reveal };
 })();

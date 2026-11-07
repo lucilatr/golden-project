@@ -467,7 +467,7 @@
 
     <h3>La pantalla</h3>
     <ul>
-      <li><b>Arriba — Línea de tiempo por etapa:</b> una grilla con la canción dividida en los 3 actos de la historia (<b style="color:#8098c8">Deseo</b> → <b style="color:#c56ab0">Transformación</b> → <b style="color:#e0b44e">Consagración</b>), y dentro, las secciones de cada momento. El ancho es proporcional al tiempo (se puede scrollear a la derecha).</li>
+      <li><b>Arriba — Línea de tiempo por etapa:</b> una grilla con la canción dividida en los 3 actos de la historia (<b style="color:var(--st-desire)">Deseo</b> → <b style="color:var(--st-trans)">Transformación</b> → <b style="color:var(--accent-2)">Consagración</b>), y dentro, las secciones de cada momento. El ancho es proporcional al tiempo (se puede scrollear a la derecha).</li>
       <li>Cada sección muestra, en filas: <b>Tiempo · UI · Escenario · Acción</b>.</li>
       <li><b>Abajo — Planilla:</b> el detalle completo de cada bloque (letra, storyboard/clip, gameplay, momento del día, estado, momentos jugables, timecodes).</li>
     </ul>
@@ -487,7 +487,7 @@
 
     <h3>Momentos jugables</h3>
     <ul>
-      <li>Por cada tap se describe qué pasa en los tres resultados: <b style="color:#f0c23c">Golden</b> (perfect), <b style="color:#5fcf8f">Good</b> y <b style="color:#f0685c">Miss</b>.</li>
+      <li>Por cada tap se describe qué pasa en los tres resultados: <b style="color:var(--tone-perfect)">Golden</b> (perfect), <b style="color:var(--tone-hit)">Good</b> y <b style="color:var(--tone-miss)">Miss</b>.</li>
     </ul>
 
     <h3>Storyboard / clip (en la planilla)</h3>

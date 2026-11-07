@@ -289,33 +289,84 @@
      ============================================================ */
   function renderBrand() {
     const host = el("hub-brand"); if (!host) return; host.innerHTML = "";
-    host.appendChild(h("h1", {}, "GOLDEN"));
+    host.appendChild(h("h1", {}, ["G", h("span", { class: "rest" }, "OLDEN")]));
     host.appendChild(h("span", { class: "sub" }, "✦ Production Hub"));
-    host.appendChild(h("span", { class: "spacer" }));
-    host.appendChild(h("span", { class: "hub-pill " + (Sync.enabled ? "live" : "") }, [
-      h("span", { class: "dot" }), Sync.enabled ? "Online · en vivo" : "Local",
+    const status = el("hub-status"); if (!status) return; status.innerHTML = "";
+    const syncLabel = Sync.enabled ? "Online · en vivo" : "Local";
+    status.appendChild(h("span", { class: "hub-pill " + (Sync.enabled ? "live" : ""), title: syncLabel }, [
+      h("span", { class: "dot" }), h("span", { class: "tlabel" }, syncLabel),
     ]));
     const ident = h("span", { class: "hub-ident" });
     ident.appendChild(h("span", { class: "mode-pill state " + (ui.editable ? "edit" : "ro") }, ui.editable ? "✎ EDICIÓN" : "👁 SOLO LECTURA"));
-    ident.appendChild(h("button", { class: "mode-pill edit", onclick: toggleLock }, ui.editable ? "🔓 Bloquear" : "🔒 Editar"));
-    host.appendChild(ident);
+    const lockLabel = ui.editable ? "Bloquear" : "Editar";
+    ident.appendChild(h("button", { class: "mode-pill edit", onclick: toggleLock, title: lockLabel, "aria-label": lockLabel }, [
+      ui.editable ? "🔓" : "🔒", h("span", { class: "tlabel" }, lockLabel),
+    ]));
+    status.appendChild(ident);
+  }
+
+  /* Menú lateral y tema: preferencia de cada navegador */
+  const narrowScreen = () => window.matchMedia("(max-width:700px)").matches;
+  function setSideCollapsed(collapsed, remember) {
+    document.documentElement.classList.toggle("side-collapsed", collapsed);
+    if (remember) { try { localStorage.setItem("golden_side", collapsed ? "collapsed" : "open"); } catch (e) {} }
+    renderSideToggle();
+  }
+  function renderSideToggle() {
+    const b = el("hub-side-toggle"); if (!b) return;
+    const collapsed = document.documentElement.classList.contains("side-collapsed");
+    const label = collapsed ? "Mostrar menú" : "Esconder menú";
+    b.title = label; b.setAttribute("aria-label", label); b.setAttribute("aria-expanded", String(!collapsed));
+  }
+  function renderThemeButton() {
+    const b = el("hub-theme"); if (!b) return; b.innerHTML = "";
+    const light = document.documentElement.dataset.theme === "light";
+    const label = light ? "Modo oscuro" : "Modo claro";
+    b.title = label; b.setAttribute("aria-label", label);
+    b.appendChild(h("span", { class: "tico", "aria-hidden": "true" }, light ? "☾" : "☀"));
+    b.appendChild(h("span", { class: "tlabel" }, label));
+  }
+  function applyThemeToFrames(light) {
+    document.querySelectorAll(".hub-frame").forEach((f) => {
+      try {
+        if (light) f.contentDocument.documentElement.dataset.theme = "light";
+        else delete f.contentDocument.documentElement.dataset.theme;
+      } catch (e) {}
+    });
+  }
+  function toggleTheme() {
+    const light = document.documentElement.dataset.theme !== "light";
+    if (light) document.documentElement.dataset.theme = "light"; else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem("golden_theme", light ? "light" : "dark"); } catch (e) {}
+    applyThemeToFrames(light);
+    renderThemeButton();
+  }
+  function initSideControls() {
+    el("hub-side-toggle").addEventListener("click", () => setSideCollapsed(!document.documentElement.classList.contains("side-collapsed"), !narrowScreen()));
+    el("hub-theme").addEventListener("click", toggleTheme);
+    renderSideToggle(); renderThemeButton();
   }
 
   const TABS = [
-    { id: "resumen", label: "◱ Resumen" },
-    { id: "script",  label: "♪ Script", done: true },
-    { id: "guion",   label: "☰ Guion" },
-    { id: "tracker", label: "▦ Tracker" },
-    { id: "cal",     label: "▤ Calendario" },
-    { id: "guia",    label: "⎙ Guía de testeo", done: true },
+    { id: "resumen", icon: "◱", label: "Resumen" },
+    { id: "script",  icon: "♪", label: "Script", done: true, hidden: true },
+    { id: "guion",   icon: "☰", label: "Guion" },
+    { id: "tracker", icon: "▦", label: "Tracker" },
+    { id: "cal",     icon: "▤", label: "Calendario" },
+    { id: "reuniones", icon: "◷", label: "Reuniones" },
+    { id: "feedback", icon: "✎", label: "Feedback" },
+    { id: "direccion", icon: "◎", label: "Dirección" },
+    { id: "guia",    icon: "⎙", label: "Guía de testeo", done: true },
   ];
   function renderTabs() {
     const host = el("hub-tabs"); if (!host) return; host.innerHTML = "";
-    TABS.forEach((t) => {
-      const b = h("button", { class: "hub-tab" + (ui.view === t.id ? " active" : "") }, [document.createTextNode(t.label)]);
+    TABS.filter((t) => !t.hidden).forEach((t) => {
+      const b = h("button", { class: "hub-tab" + (ui.view === t.id ? " active" : ""), title: t.label, "aria-label": t.label, "aria-current": ui.view === t.id ? "page" : null }, [
+        h("span", { class: "tico", "aria-hidden": "true" }, t.icon), h("span", { class: "tlabel" }, t.label),
+      ]);
       if (t.id === "tracker") b.appendChild(h("span", { class: "tcount" }, String(data.tasks.length + data.scenarios.length)));
       if (t.done) b.appendChild(h("span", { class: "tcount done" }, "✓"));
-      b.addEventListener("click", () => show(t.id));
+      b.addEventListener("click", () => { show(t.id); if (narrowScreen()) setSideCollapsed(true, false); });
       host.appendChild(b);
     });
   }
@@ -334,6 +385,9 @@
     else if (ui.view === "tracker") renderTracker();
     else if (ui.view === "cal") renderCal();
     else if (ui.view === "guion" && window.GoldenGuion) window.GoldenGuion.render();
+    else if (ui.view === "reuniones" && window.GoldenReuniones) window.GoldenReuniones.render();
+    else if (ui.view === "feedback" && window.GoldenFeedback) window.GoldenFeedback.render();
+    else if (ui.view === "direccion" && window.GoldenDireccion) window.GoldenDireccion.render();
   }
 
   /* ============================================================
@@ -1110,6 +1164,6 @@
     data = seed(); saveLocal();
   }
 
-  window.GoldenHub = { show, editable };
-  document.addEventListener("DOMContentLoaded", boot);
+  window.GoldenHub = { show, editable, depts: DEPTS };
+  document.addEventListener("DOMContentLoaded", () => { initSideControls(); boot(); });
 })();

@@ -1,0 +1,226 @@
+[
+ {
+  "id": "golden:guion:r0546:camera",
+  "data": {
+   "text": "frontal\nse va para atrás y ella sale para arriba"
+  },
+  "updated_at": "2026-11-06T18:49:42.542849+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:camera",
+  "data": {
+   "text": "frontal - encuadra con el  primer demonio, corrige"
+  },
+  "updated_at": "2026-11-06T18:41:24.75756+00:00"
+ },
+ {
+  "id": "golden:guion:r1270:action",
+  "data": {
+   "text": "ella viene para camara y ataca demons (mas como en la siguiente imagen)\ndisolve de particulas gold cuando los mata"
+  },
+  "updated_at": "2026-11-06T19:26:31.135141+00:00"
+ },
+ {
+  "id": "golden:guion:r0231:camera",
+  "data": {
+   "text": "La camara girarìa despues de esto hasta quedar de espaldas. "
+  },
+  "updated_at": "2026-11-06T18:37:02.364825+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:camera",
+  "data": {
+   "text": "lateral"
+  },
+  "updated_at": "2026-11-06T19:00:18.518713+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:camera",
+  "data": {
+   "text": "ascenso"
+  },
+  "updated_at": "2026-11-06T19:00:22.537879+00:00"
+ },
+ {
+  "id": "golden:guion:r0231:action",
+  "data": {
+   "text": "el set desaparece. todo negro. patterns la atacan y los tenes que desarmar - incluye la siguiente parte"
+  },
+  "updated_at": "2026-11-06T18:37:28.063255+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:ui",
+  "data": {
+   "text": "swipes"
+  },
+  "updated_at": "2026-11-06T18:40:16.257116+00:00"
+ },
+ {
+  "id": "golden:guion:r0000:camera",
+  "data": {
+   "text": "sobrevuela"
+  },
+  "updated_at": "2026-11-06T16:14:30.847263+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:ui",
+  "data": {
+   "text": "Clasica"
+  },
+  "updated_at": "2026-11-06T19:01:42.105824+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:ui",
+  "data": {
+   "text": "geolocalizada"
+  },
+  "updated_at": "2026-11-06T19:01:45.203637+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:ui",
+  "data": {
+   "text": "geolocalizada"
+  },
+  "updated_at": "2026-11-06T19:01:52.500765+00:00"
+ },
+ {
+  "id": "golden:guion:r0465:action",
+  "data": {
+   "text": "el espacio se va poniendo magenta, oscuro\n\nEsto puede ser en un plano corto "
+  },
+  "updated_at": "2026-11-06T18:49:26.89735+00:00"
+ },
+ {
+  "id": "golden:guion:r0096:camera",
+  "data": {
+   "text": "se acomoda frente a Rumi"
+  },
+  "updated_at": "2026-11-06T16:38:55.337183+00:00"
+ },
+ {
+  "id": "golden:guion:r0546:action",
+  "data": {
+   "text": "demons la atacan desde atras - subjetiva?\n\nAca la camara se aleja\n"
+  },
+  "updated_at": "2026-11-06T18:49:19.295+00:00"
+ },
+ {
+  "id": "golden:guion:r0949:action",
+  "data": {
+   "text": "Spawnean desde el piso formas demoniacas tipo patterns y las tapeas\n"
+  },
+  "updated_at": "2026-11-06T19:23:00.759688+00:00"
+ },
+ {
+  "id": "golden:guion:r0282:ui",
+  "data": {
+   "text": "ui vertical o geolocalizado"
+  },
+  "updated_at": "2026-11-06T19:33:21.723462+00:00"
+ },
+ {
+  "id": "golden:guion:r0384:camera",
+  "data": {
+   "text": "quitar esta parte / aca es red carpet"
+  },
+  "updated_at": "2026-11-06T18:43:36.159815+00:00"
+ },
+ {
+  "id": "golden:guion:r0431:camera",
+  "data": {
+   "text": "quitar esta parte / aca es red carpet"
+  },
+  "updated_at": "2026-11-06T18:43:37.733716+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:action",
+  "data": {
+   "text": "viene caminando. poses para fotógrafos, set desaparece y mata demonios"
+  },
+  "updated_at": "2026-11-06T18:41:27.728546+00:00"
+ },
+ {
+  "id": "golden:guion:r0546:ui",
+  "data": {
+   "text": "tap para matar demonios"
+  },
+  "updated_at": "2026-11-06T18:49:49.567622+00:00"
+ },
+ {
+  "id": "golden:guion:r1270:ui",
+  "data": {
+   "text": "taps"
+  },
+  "updated_at": "2026-11-06T19:26:47.754529+00:00"
+ },
+ {
+  "id": "golden:guion:r1231:action",
+  "data": {
+   "text": "Prota frontal y vienen los demons "
+  },
+  "updated_at": "2026-11-06T19:26:42.543967+00:00"
+ },
+ {
+  "id": "golden:guion:r0282:camera",
+  "data": {
+   "text": "Fede no sabe que va aca - DEFINIR"
+  },
+  "updated_at": "2026-11-06T19:40:46.326513+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:camera",
+  "data": {
+   "text": "lateral"
+  },
+  "updated_at": "2026-11-06T18:51:01.046268+00:00"
+ },
+ {
+  "id": "golden:guion:r0282:action",
+  "data": {
+   "text": "puede ser un no lugar \n"
+  },
+  "updated_at": "2026-11-06T19:33:10.723416+00:00"
+ },
+ {
+  "id": "golden:guion:r0384:action",
+  "data": {
+   "text": "Lucha"
+  },
+  "updated_at": "2026-11-06T19:41:11.025716+00:00"
+ },
+ {
+  "id": "golden:guion:r0431:action",
+  "data": {
+   "text": "lucha"
+  },
+  "updated_at": "2026-11-06T19:41:13.595446+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:action",
+  "data": {
+   "text": "techo del subte"
+  },
+  "updated_at": "2026-11-06T18:50:57.556634+00:00"
+ },
+ {
+  "id": "golden:guion:r0465:camera",
+  "data": {
+   "text": "frontal mas cerca - se va para atras y va conviertiendo"
+  },
+  "updated_at": "2026-11-06T18:49:39.444801+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:action",
+  "data": {
+   "text": "techo del subte"
+  },
+  "updated_at": "2026-11-06T19:00:19.736848+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:action",
+  "data": {
+   "text": "Acenso al cielo "
+  },
+  "updated_at": "2026-11-06T19:00:24.518019+00:00"
+ }
+]
