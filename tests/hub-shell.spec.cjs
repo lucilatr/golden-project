@@ -61,15 +61,24 @@ test('el tema claro se activa, se recuerda y llega a la guía', async ({ page })
 test('el guion une los bloques pedidos sin perder letra', async ({ page }) => {
   await open(page);
   await page.getByRole('button', { name: 'Guion' }).click();
-  await expect(page.locator('#view-guion tr[data-row]')).toHaveCount(20);
-  await expect(page.locator('tr[data-row="r0282"], tr[data-row="r0384"], tr[data-row="r0431"]')).toHaveCount(0);
+  await expect(page.locator('#view-guion tr[data-row]')).toHaveCount(21);
+  await expect(page.locator('tr[data-row="r0282"], tr[data-row="r0431"]')).toHaveCount(0);
   const first = page.locator('tr[data-row="r0231"]');
   await expect(first.locator('.g-time')).toContainText('00:23.1');
   await expect(first.locator('.g-time')).toContainText('00:30.8');
   await expect(first.locator('.g-line')).toHaveCount(2);
   const second = page.locator('tr[data-row="r0308"]');
-  await expect(second.locator('.g-time')).toContainText('00:46.5');
-  await expect(second.locator('.g-line')).toHaveCount(4);
+  await expect(second.locator('.g-time')).toContainText('00:38.4');
+  await expect(second.locator('.g-line')).toHaveCount(2);
+  // la pasarela se divide: poses (swipes) y combate lateral
+  const combat = page.locator('tr[data-row="r0384"]');
+  await expect(combat.locator('.g-time')).toContainText('00:46.3');
+  await expect(combat.locator('.g-line')).toHaveCount(2);
+  // tramos de la maqueta del 10/11: la frase de 00:54 queda en el subte de día
+  await expect(page.locator('tr[data-row="r0465"] .g-time')).toContainText('00:55.7');
+  await expect(page.locator('tr[data-row="r0465"] .g-line')).toHaveCount(3);
+  await expect(page.locator('tr[data-row="r0546"] .g-line')).toHaveCount(1);
+  await expect(page.locator('tr[data-row="r0624"] .g-time')).toContainText('01:02.2');
 });
 
 test('reuniones y feedback muestran su contenido por sección', async ({ page }) => {
@@ -111,7 +120,7 @@ test('lo pendiente del guion se ve en rojo sin cambiar el texto', async ({ page 
 test('las secuencias del guion siguen la numeración acordada', async ({ page }) => {
   await open(page);
   await page.getByRole('button', { name: 'Guion' }).click();
-  const seq = { r0000: 'S01', r0096: 'S01', r0160: 'S01', r0231: 'S01', r0308: 'S02', r0465: 'S03', r0546: 'S03', r0624: 'S04', r0701: 'S04', r0782: 'S04', r0849: 'S05', r0949: 'S06', r1070: 'S06', r1119: 'S07', r1231: 'S08', r1270: 'S08', r1381: 'S09', r1502: 'S09', r1599: 'S10', r1750: 'S10' };
+  const seq = { r0000: 'S01', r0096: 'S01', r0160: 'S01', r0231: 'S01', r0308: 'S02', r0384: 'S02', r0465: 'S03', r0546: 'S03', r0624: 'S04', r0701: 'S04', r0782: 'S04', r0849: 'S05', r0949: 'S06', r1070: 'S06', r1119: 'S07', r1231: 'S08', r1270: 'S08', r1381: 'S09', r1502: 'S09', r1599: 'S10', r1750: 'S10' };
   for (const [row, label] of Object.entries(seq)) await expect(page.locator(`tr[data-row="${row}"] .g-set strong`)).toHaveText(new RegExp('^' + label + ' · '));
 });
 

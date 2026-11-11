@@ -8,6 +8,32 @@
 
   const FEEDBACK = [
     {
+      dept: "narrativa", to: "Lucila y equipo", date: "11/11 · video de la maqueta",
+      items: [
+        ["00:23–00:30", "Otro encuadre para la interactividad; hacer un blocking"],
+        ["Idea", "Romper corona, trono o el texto \"Queen that I'm meant to be\""],
+        ["Subte", "Empezar más cerca de la cara y girar antes de \"We dreamin' hard\""],
+        ["Subjetiva", "Que la cámara no vuelva a Rumi: transición gráfica o corte"],
+        ["Techo", "Rumi llega cayendo del cielo; flash a blanco"],
+      ],
+      check: "Charlarlo antes de ejecutar y llevar lo interactivo a la reunión.",
+    },
+    {
+      dept: "animacion", to: "Paula", date: "11/11 · video de la maqueta",
+      items: [
+        ["Poses", "Están bien; Rumi nunca camina: pose tras pose"],
+        ["Entre poses", "Que se sienta como resultado del swipe hacia afuera"],
+      ],
+    },
+    {
+      dept: "gameplay", to: "Pablo Altamiranda", date: "11/11 · video de la maqueta",
+      items: [
+        ["Combate", "Swipes hacia los lados, unos 8; Rumi centrada"],
+        ["00:23–00:30", "Usar los taps de aros que se cierran"],
+        ["Taps", "Falta definir el lenguaje; quizás en el tren"],
+      ],
+    },
+    {
       dept: "ui", to: "Andrés Chouhy", date: "06/11",
       link: { label: "Ver Loom ↗", url: "https://www.loom.com/share/02c2358e357342948a28ed0e9e30306c" },
       items: [
