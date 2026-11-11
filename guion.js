@@ -24,20 +24,22 @@
     B: { label: "Etapa 2 · Transformación y liberación", color: "var(--st-trans)" },
     C: { label: "Etapa 3 · Consagración dorada", color: "var(--st-golden)" },
   };
+  // Cambiarlo cuando se reemplazan videos, para que nadie vea los viejos por caché.
+  const ASSET_V = "20261111b";
   const ROWS = [
-    {"id": "r0000", "stage": "A", "in": 0.0, "out": 9.3, "set": "S01 · Seúl, calle Hanok (aéreo)", "desc": "Plano aéreo que avanza lento sobre techos, cerezos y cartel de HUNTR/X, y gira hasta alinear la calle en vertical. Rumi muy chica, abajo. El título GOLDEN entra con fundido (~00:00.7 a 00:01.3). En la maqueta hay un salto de encuadre en 00:04.5.", "lyric": []},
+    {"id": "r0000", "stage": "A", "in": 0.0, "out": 9.3, "set": "S01 · Seúl, calle Hanok (aéreo)", "desc": "Plano aéreo que avanza lento sobre techos, árboles verdes con flores violetas y cartel de HUNTR/X, y gira hasta alinear la calle en vertical. Rumi muy chica, abajo. El título GOLDEN entra con fundido (~00:00.7 a 00:01.3). En la maqueta hay un salto de encuadre en 00:04.5.", "lyric": []},
     // Conserva el id r0096 de la fila 00:09.6 de la v14: Cámara ya tiene texto escrito bajo ese id.
     {"id": "r0096", "stage": "A", "in": 9.3, "out": 16.0, "set": "S01 · Seúl, calle Hanok (a nivel calle)", "desc": "Corte a la calle: la cámara baja desde la altura de los techos y avanza, con Rumi muy lejos al fondo. El título se va con fundido (~00:12.4 a 00:13.1). Desde 00:13.0 acelera con barrido hasta quedar frente a Rumi (~00:13.8); entran los pétalos y la cámara retrocede mientras Rumi camina hacia ella.", "lyric": []},
     {"id": "r0160", "stage": "A", "in": 16.0, "out": 23.1, "set": "S01 · Seúl, calle Hanok (cont.)", "desc": "Misma calle. La cámara sigue retrocediendo frente a Rumi. Arranca la voz.", "lyric": [["00:16", "I was a ghost, I was alone"], ["≈00:20", "eoduwojin apgil soge"]]},
-    // Une 00:23.1 y 00:28.2 (conserva el id r0231). Desde acá hasta 01:10.1, video y descripción son de la maqueta del 10/11.
-    {"id": "r0231", "stage": "A", "in": 23.1, "out": 30.8, "set": "S01 · Close-up, bokeh verde y violeta", "desc": "Rumi de cintura para arriba, fondo de luces desenfocadas verdes y violetas. Plano fijo durante todo el tramo; sale con fundido a negro.", "lyric": [["00:24", "Given the throne, I didn't know how to believe"], ["00:28", "I was the queen that I'm meant to be"]]},
+    // Une 00:23.1 y 00:28.2 (conserva el id r0231). Hasta 01:10.1, video y descripción son de la maqueta del 11/11.
+    {"id": "r0231", "stage": "A", "in": 23.1, "out": 30.8, "set": "S01 · Close-up, bokeh verde y violeta", "desc": "Rumi de cintura para arriba sobre fondo de luces desenfocadas verdes y violetas. Cerca de 00:25 pasa a una vista top con Rumi chiquita, girando en el aire. Hacia 00:29 aparece en dorado \"The Queen that I'm\" y se deshace en partículas.", "lyric": [["00:24", "Given the throne, I didn't know how to believe"], ["00:28", "I was the queen that I'm meant to be"]]},
     // Pasarela, primera mitad: poses (conserva el id r0308).
     {"id": "r0308", "stage": "A", "in": 30.8, "out": 38.4, "set": "S02 · Pasarela, alfombra roja (poses)", "desc": "Escaleras blancas y público con las luces de los celulares. Rumi de frente hacia cámara. Termina con la cámara girando hacia el lateral (~00:38).", "lyric": [["00:31", "I lived two lives, tried to play both sides"], ["00:35", "But I couldn't find my own place"]]},
     // Segunda mitad de la pasarela: cambia la mecánica (combate lateral). Reusa el id libre r0384.
     {"id": "r0384", "stage": "A", "in": 38.4, "out": 46.3, "set": "S02 · Pasarela, alfombra roja (combate lateral)", "desc": "Cámara lateral, se sigue viendo el set. Rumi pelea con espada contra demonios, con golpes de destellos blancos y rosas. Sale con flash blanco.", "lyric": [["00:39", "Called a problem child 'cause I got too wild"], ["00:43", "But now that's how I'm getting paid 끝없이 on stage"]]},
-    {"id": "r0465", "stage": "B", "in": 46.3, "out": 55.7, "set": "S03 · Subte, de día → modo demon", "desc": "Entra con flash blanco. Plano corto de Rumi en el vagón (asientos azules, ventanas con skyline y río). La cámara se aleja mientras ella camina; desde ~00:49.5 aparece energía magenta hasta que el vagón queda oscuro, con venas magenta.", "lyric": [["00:47", "I'm done hidin', now I'm shinin'"], ["00:51", "Like I'm born to be"], ["00:54", "We dreamin' hard, we came so far"]]},
-    {"id": "r0546", "stage": "B", "in": 55.7, "out": 62.2, "set": "S03 · Subte, modo demon (subjetiva)", "desc": "Barrido rápido a la vista subjetiva: vagón vacío en modo demon, con venas magenta. Cerca de 01:01.5, otro barrido vuelve a Rumi caminando hacia cámara. Sale con flash blanco.", "lyric": [["00:58", "Now I believe"]]},
-    {"id": "r0624", "stage": "B", "in": 62.2, "out": 70.1, "set": "S04 · Techo del subte, lateral", "desc": "Entra con flash blanco. Vista lateral: Rumi camina sobre el techo del vagón; detrás pasan el puente de hierro y el skyline con cielo violeta. En esta maqueta todavía no hay combate.", "lyric": [["01:02", "We're goin' up, up, up, it's our moment"], ["01:05", "You know together we're glowin'"], ["01:07", "Gonna be, gonna be golden"]]},
+    {"id": "r0465", "stage": "B", "in": 46.3, "out": 51.7, "set": "S03 · Subte, de día → modo demon", "desc": "Entra con flash blanco. Close-up de Rumi en el vagón (asientos azules, ventanas con skyline y río). La cámara se aleja mientras ella camina; desde ~00:49.5 aparece energía magenta y el vagón queda oscuro, con venas magenta.", "lyric": [["00:47", "I'm done hidin', now I'm shinin'"], ["00:51", "Like I'm born to be"]]},
+    {"id": "r0546", "stage": "B", "in": 51.7, "out": 61.4, "set": "S03 · Subte, modo demon (subjetiva)", "desc": "Barrido rápido a la vista subjetiva, antes de \"We dreamin' hard\": vagón vacío en modo demon, con venas magenta. La cámara ya no vuelve a Rumi. Sale con flash blanco.", "lyric": [["00:54", "We dreamin' hard, we came so far"], ["00:58", "Now I believe"]]},
+    {"id": "r0624", "stage": "B", "in": 61.4, "out": 70.1, "set": "S04 · Techo del subte, lateral", "desc": "Entra con flash blanco. Vista lateral, primero más cerrada: Rumi camina sobre el techo del vagón; detrás pasan el puente de hierro y el skyline con cielo violeta. En esta maqueta todavía no hay combate.", "lyric": [["01:02", "We're goin' up, up, up, it's our moment"], ["01:05", "You know together we're glowin'"], ["01:07", "Gonna be, gonna be golden"]]},
     {"id": "r0701", "stage": "B", "in": 70.1, "out": 78.2, "set": "S04 · Cielo violeta, giro y combate", "desc": "Disolvencia. Rumi girando en el aire con espada, demonios alrededor. \"Gira en el aire y mata demonios\". HUD + interfaz Z en maqueta.", "lyric": [["01:09", "Oh-oh-oh, up, up, up with our voices"], ["01:13", "yeongwonhi kkaejil su eomneun"], ["01:15", "Gonna be, gonna be golden"]]},
     {"id": "r0782", "stage": "B", "in": 78.2, "out": 84.9, "set": "S04 · Vórtice de energía, vuelo", "desc": "Disolvencia. Close de Rumi volando de frente entre aros de luz. \"Vuela hacia el camino de cristal\". HUD + interfaz Z en maqueta.", "lyric": [["01:18", "Oh-oh-oh, I'm done hidin', now I'm shinin'"], ["01:22", "Like I'm born to be"]]},
     {"id": "r0849", "stage": "B", "in": 84.9, "out": 94.9, "set": "S05 · Camino de cristal sobre nubes", "desc": "Rumi de espaldas avanzando, cielo de atardecer, demonios volando en silueta. Sin HUD.", "lyric": [["01:26", "Oh, our time, no fears, no lies"], ["01:29", "That's who we're born to be"]]},
@@ -145,8 +147,8 @@
     stopPlayer();
     stopClip();
     const v = h("video");
-    v.src = "guion-assets/" + r.id + ".mp4";
-    v.poster = "guion-assets/" + r.id + ".jpg";
+    v.src = "guion-assets/" + r.id + ".mp4?v=" + ASSET_V;
+    v.poster = "guion-assets/" + r.id + ".jpg?v=" + ASSET_V;
     v.controls = true;
     v.playsInline = true;
     v.setAttribute("aria-label", "Video " + fmt(r.in) + " a " + fmt(r.out));
@@ -293,7 +295,7 @@
     btn.setAttribute("aria-label", "Ver video " + fmt(r.in) + " a " + fmt(r.out));
     btn.addEventListener("click", () => playClip(r, box));
     const img = h("img");
-    img.src = "guion-assets/" + r.id + ".jpg";
+    img.src = "guion-assets/" + r.id + ".jpg?v=" + ASSET_V;
     img.alt = r.set;
     img.loading = "lazy";
     btn.appendChild(img);

@@ -1,0 +1,240 @@
+[
+ {
+  "id": "golden:guion:r0231:action",
+  "data": {
+   "text": "Vista top: Rumi camina mientras aparece el texto \"Queen that I'm meant to be\". Al tapearlo, el texto explota, como en el videoclip oficial. Los patterns no van: no tienen mucho sentido con la letra.\n\nPARA DEFINIR\n- Charlarlo con Fede antes de ejecutar."
+  },
+  "updated_at": "2026-11-06T18:37:28.063255+00:00"
+ },
+ {
+  "id": "golden:guion:r0231:ui",
+  "data": {
+   "text": "Taps sobre el texto para hacerlo explotar (con los aros que se cierran que está haciendo Pablo)."
+  },
+  "updated_at": "2026-11-07T18:49:42.799492+00:00"
+ },
+ {
+  "id": "golden:guion:r0000:ui",
+  "data": {
+   "text": "Tutorial de unos 5 s durante el sobrevuelo: lista chica con los gestos (tap, swipe). Cada uno se tacha al hacerlo. Si lo ignorás, el juego sigue igual: no frena ni cambia nada.\n\nPARA DEFINIR\n- Cómo se ve y cómo se reduce a lo mínimo la información. Primer paso: un frame fijo, cuando las UIs estén definidas.\n- Qué gestos entran, según las UIs que queden."
+  },
+  "updated_at": "2026-11-07T18:49:42.799492+00:00"
+ },
+ {
+  "id": "golden:guion:r1270:action",
+  "data": {
+   "text": "ella viene para camara y ataca demons (mas como en la siguiente imagen)\ndisolve de particulas gold cuando los mata"
+  },
+  "updated_at": "2026-11-06T19:26:31.135141+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:camera",
+  "data": {
+   "text": "Frontal. Al final la cámara gira para ponerse lateral; se sigue viendo el set de la pasarela."
+  },
+  "updated_at": "2026-11-06T18:41:24.75756+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:camera",
+  "data": {
+   "text": "lateral"
+  },
+  "updated_at": "2026-11-06T19:00:18.518713+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:camera",
+  "data": {
+   "text": "ascenso"
+  },
+  "updated_at": "2026-11-06T19:00:22.537879+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:action",
+  "data": {
+   "text": "Rumi nunca camina: hace poses para los fotógrafos, una tras otra, durante las dos frases.\nLa animación entre pose y pose tiene que sentirse como resultado del swipe hacia afuera."
+  },
+  "updated_at": "2026-11-06T18:41:27.728546+00:00"
+ },
+ {
+  "id": "golden:guion:r0308:ui",
+  "data": {
+   "text": "swipes\n\nSwipes para las poses, la mayoría hacia afuera."
+  },
+  "updated_at": "2026-11-06T18:40:16.257116+00:00"
+ },
+ {
+  "id": "golden:guion:r0000:camera",
+  "data": {
+   "text": "sobrevuela"
+  },
+  "updated_at": "2026-11-06T16:14:30.847263+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:ui",
+  "data": {
+   "text": "Clasica"
+  },
+  "updated_at": "2026-11-06T19:01:42.105824+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:ui",
+  "data": {
+   "text": "geolocalizada"
+  },
+  "updated_at": "2026-11-06T19:01:45.203637+00:00"
+ },
+ {
+  "id": "golden:guion:r0096:ui",
+  "data": {
+   "text": "Sin UI de juego: la UI normal entra en el bloque siguiente, cuando arranca la voz."
+  },
+  "updated_at": "2026-11-07T18:49:42.799492+00:00"
+ },
+ {
+  "id": "golden:guion:r0384:camera",
+  "data": {
+   "text": "Lateral: la cámara giró y se sigue viendo el set.\nRumi centrada en pantalla, para tener lugar para swipear a izquierda y derecha; si no, no entran los dedos."
+  },
+  "updated_at": "2026-11-11T14:29:24.125098+00:00"
+ },
+ {
+  "id": "golden:guion:r0096:camera",
+  "data": {
+   "text": "se acomoda frente a Rumi"
+  },
+  "updated_at": "2026-11-06T16:38:55.337183+00:00"
+ },
+ {
+  "id": "golden:guion:r0384:action",
+  "data": {
+   "text": "Una vez que la cámara gira, vemos a Rumi en el medio, luchando contra los demonios que se le vienen encima. Es la primera vez que Rumi mata a un demonio en el juego.\nSi fallás, el demonio te pega.\n\nPARA DEFINIR\n- Transición al subte: por ahora, un movimiento de la espada ilumina la pantalla y esa luz hace de transición. Confirmar si estamos ok con eso."
+  },
+  "updated_at": "2026-11-11T14:29:24.125098+00:00"
+ },
+ {
+  "id": "golden:guion:r0949:action",
+  "data": {
+   "text": "Spawnean desde el piso formas demoniacas tipo patterns y las tapeas\n"
+  },
+  "updated_at": "2026-11-06T19:23:00.759688+00:00"
+ },
+ {
+  "id": "golden:guion:r0160:ui",
+  "data": {
+   "text": "UI normal"
+  },
+  "updated_at": "2026-11-07T18:49:42.799492+00:00"
+ },
+ {
+  "id": "golden:guion:r0384:ui",
+  "data": {
+   "text": "Swipes hacia los lados para sacarse de encima a los demonios (unos 8). La frecuencia de ataque está bien; hasta podría ser más."
+  },
+  "updated_at": "2026-11-11T14:29:24.125098+00:00"
+ },
+ {
+  "id": "golden:guion:r0465:camera",
+  "data": {
+   "text": "Empieza en un close-up de Rumi.\nfrontal mas cerca - se va para atras y va conviertiendo\n\nPARA DEFINIR\n- Fede: que el giro a la subjetiva llegue antes, antes de \"We dreamin' hard\", para que todo ese tiempo sea de demonios."
+  },
+  "updated_at": "2026-11-06T18:49:39.444801+00:00"
+ },
+ {
+  "id": "golden:guion:r0465:action",
+  "data": {
+   "text": "el espacio se va poniendo magenta, oscuro\n\nPARA DEFINIR\n- Qué hace Rumi en este momento: ¿una coreo u otra cosa?"
+  },
+  "updated_at": "2026-11-06T18:49:26.89735+00:00"
+ },
+ {
+  "id": "golden:guion:r0465:ui",
+  "data": {
+   "text": "Taps comunes."
+  },
+  "updated_at": "2026-11-11T14:29:24.125098+00:00"
+ },
+ {
+  "id": "golden:guion:r1270:ui",
+  "data": {
+   "text": "taps"
+  },
+  "updated_at": "2026-11-06T19:26:47.754529+00:00"
+ },
+ {
+  "id": "golden:guion:r1231:action",
+  "data": {
+   "text": "Prota frontal y vienen los demons "
+  },
+  "updated_at": "2026-11-06T19:26:42.543967+00:00"
+ },
+ {
+  "id": "golden:guion:r0546:ui",
+  "data": {
+   "text": "Taps geolocalizados para matar demonios."
+  },
+  "updated_at": "2026-11-06T18:49:49.567622+00:00"
+ },
+ {
+  "id": "golden:guion:r0160:action",
+  "data": {
+   "text": "Va una coreo de Mauricio."
+  },
+  "updated_at": "2026-11-11T14:29:24.125098+00:00"
+ },
+ {
+  "id": "golden:guion:r0231:camera",
+  "data": {
+   "text": "Vista top: vemos a Rumi caminando mientras aparece el texto."
+  },
+  "updated_at": "2026-11-06T18:37:02.364825+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:action",
+  "data": {
+   "text": "techo del subte"
+  },
+  "updated_at": "2026-11-06T18:50:57.556634+00:00"
+ },
+ {
+  "id": "golden:guion:r0701:action",
+  "data": {
+   "text": "techo del subte"
+  },
+  "updated_at": "2026-11-06T19:00:19.736848+00:00"
+ },
+ {
+  "id": "golden:guion:r0782:action",
+  "data": {
+   "text": "Acenso al cielo "
+  },
+  "updated_at": "2026-11-06T19:00:24.518019+00:00"
+ },
+ {
+  "id": "golden:guion:r0546:camera",
+  "data": {
+   "text": "Subjetiva de Rumi.\n\nPARA DEFINIR\n- Fede: no está bueno que la cámara vuelva a Rumi al final. Buscar una transición gráfica o un corte."
+  },
+  "updated_at": "2026-11-06T18:49:42.542849+00:00"
+ },
+ {
+  "id": "golden:guion:r0546:action",
+  "data": {
+   "text": "Aca la camara se aleja\n\nLa cámara gira y vemos lo que ve Rumi: los demonios que vienen hacia ella."
+  },
+  "updated_at": "2026-11-06T18:49:19.295+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:camera",
+  "data": {
+   "text": "lateral\n\nPARA DEFINIR\n- Fede: que la secuencia empiece con Rumi llegando: viene cayendo del cielo, la cámara la mira desde abajo y después corrige hasta el lateral. Entrar con flash a blanco; no hace falta explicar qué pasó con el subte."
+  },
+  "updated_at": "2026-11-06T18:51:01.046268+00:00"
+ },
+ {
+  "id": "golden:guion:r0624:ui",
+  "data": {
+   "text": "geolocalizada\n\nPARA DEFINIR\n- Fede: quizás taps en el tren, pero el lenguaje de taps todavía no está claro (lo está viendo con Pablo)."
+  },
+  "updated_at": "2026-11-06T19:01:52.500765+00:00"
+ }
+]

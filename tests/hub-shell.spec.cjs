@@ -74,11 +74,11 @@ test('el guion une los bloques pedidos sin perder letra', async ({ page }) => {
   const combat = page.locator('tr[data-row="r0384"]');
   await expect(combat.locator('.g-time')).toContainText('00:46.3');
   await expect(combat.locator('.g-line')).toHaveCount(2);
-  // tramos de la maqueta del 10/11: la frase de 00:54 queda en el subte de día
-  await expect(page.locator('tr[data-row="r0465"] .g-time')).toContainText('00:55.7');
-  await expect(page.locator('tr[data-row="r0465"] .g-line')).toHaveCount(3);
-  await expect(page.locator('tr[data-row="r0546"] .g-line')).toHaveCount(1);
-  await expect(page.locator('tr[data-row="r0624"] .g-time')).toContainText('01:02.2');
+  // tramos de la maqueta del 11/11: el giro a la subjetiva llega antes de 00:54
+  await expect(page.locator('tr[data-row="r0465"] .g-time')).toContainText('00:51.7');
+  await expect(page.locator('tr[data-row="r0465"] .g-line')).toHaveCount(2);
+  await expect(page.locator('tr[data-row="r0546"] .g-line')).toHaveCount(2);
+  await expect(page.locator('tr[data-row="r0624"] .g-time')).toContainText('01:01.4');
 });
 
 test('reuniones y feedback muestran su contenido por sección', async ({ page }) => {
